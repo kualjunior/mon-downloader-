@@ -8,7 +8,7 @@ from pathlib import Path
 # CONFIG PAGE
 # =========================
 st.set_page_config(
-    page_title="Ultimate Downloader X",
+    page_title="Ultimate Downloader X PRO",
     page_icon="🚀",
     layout="wide"
 )
@@ -17,165 +17,140 @@ DOWNLOAD_FOLDER = "downloads"
 Path(DOWNLOAD_FOLDER).mkdir(exist_ok=True)
 
 # =========================
-# STYLE ULTRA PREMIUM BLEU
+# SESSION STATE
 # =========================
-st.markdown("""
-<style>
-
-/* Background sombre premium */
-body {
-    background: linear-gradient(135deg,#0f2027,#1c2b36,#141E30);
-}
-
-/* DAVID EDWIN énorme bleu néon */
-@keyframes blueGlow {
-    0% { text-shadow: 0 0 10px #00c6ff, 0 0 20px #0072ff; }
-    50% { text-shadow: 0 0 40px #00c6ff, 0 0 80px #0072ff; }
-    100% { text-shadow: 0 0 10px #00c6ff, 0 0 20px #0072ff; }
-}
-
-.david-name {
-    font-size: 5.5em;
-    font-weight: 900;
-    text-align: center;
-    color: #00c6ff;
-    animation: blueGlow 2s infinite alternate;
-    margin-bottom: 0;
-    letter-spacing: 5px;
-}
-
-.subtitle {
-    text-align: center;
-    font-size: 1.5em;
-    color: #cccccc;
-    letter-spacing: 3px;
-}
-
-/* Boutons */
-.stButton>button {
-    width: 100%;
-    border-radius: 12px;
-    height: 3em;
-    font-weight: bold;
-    background: linear-gradient(90deg,#0072ff,#00c6ff);
-    color: white;
-    border: none;
-    transition: 0.3s;
-}
-.stButton>button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 25px #00c6ff;
-}
-
-.stDownloadButton>button {
-    width: 100%;
-    border-radius: 12px;
-    height: 3em;
-    background: linear-gradient(90deg,#00c6ff,#0072ff);
-    color: white;
-    font-weight: bold;
-    border: none;
-}
-
-/* Card style */
-.glass {
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 25px;
-    margin-top: 20px;
-}
-
-/* Footer */
-.footer {
-    text-align: center;
-    opacity: 0.6;
-    margin-top: 50px;
-}
-
-</style>
-""", unsafe_allow_html=True)
+if "history" not in st.session_state:
+    st.session_state.history = []
 
 # =========================
-# HEADER SIGNATURE
+# HEADER
 # =========================
-st.markdown('<p class="david-name">DAVID EDWIN</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Ultimate Downloader X • Founder & Developer</p>', unsafe_allow_html=True)
+st.title("🚀 Ultimate Downloader X - PRO Edition")
+st.caption("Founder & Developer : DAVID EDWIN")
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.divider()
 
 # =========================
-# INPUT URL
+# SIDEBAR
 # =========================
-st.markdown('<div class="glass">', unsafe_allow_html=True)
-url = st.text_input("🔗 Collez votre lien ici")
-format_choice = st.radio("Choisissez le format :", ["MP4 🎥 (Vidéo)", "MP3 🎵 (Audio)"], horizontal=True)
-st.markdown('</div>', unsafe_allow_html=True)
+st.sidebar.title("📜 Historique")
+
+if st.session_state.history:
+    for item in st.session_state.history:
+        st.sidebar.write("•", item)
+else:
+    st.sidebar.info("Aucun téléchargement pour le moment.")
+
+st.sidebar.divider()
+st.sidebar.success("✔ Compatible YouTube, TikTok, Facebook, Instagram")
+
+# =========================
+# INPUT
+# =========================
+urls = st.text_area("🔗 Collez un ou plusieurs liens (1 par ligne)")
+
+format_choice = st.radio(
+    "Format :",
+    ["MP4 🎥 (Vidéo)", "MP3 🎵 (Audio)"],
+    horizontal=True
+)
+
+quality = st.selectbox(
+    "🎞️ Qualité vidéo",
+    ["Best", "1080p", "720p", "480p", "360p"]
+)
+
+st.divider()
 
 # =========================
 # TELECHARGEMENT
 # =========================
-if url:
-    try:
-        with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
-            info = ydl.extract_info(url, download=False)
+if urls:
+    url_list = [u.strip() for u in urls.split("\n") if u.strip()]
 
-        st.image(info.get("thumbnail"), use_container_width=True)
-        st.subheader(info.get("title"))
+    if st.button("🚀 Lancer le téléchargement PRO"):
 
-        if st.button("🚀 Lancer le téléchargement"):
+        progress = st.progress(0)
+        status_text = st.empty()
 
-            progress = st.progress(0)
+        def hook(d):
+            if d['status'] == 'downloading':
+                total = d.get('total_bytes') or d.get('total_bytes_estimate')
+                downloaded = d.get('downloaded_bytes', 0)
+                if total:
+                    percent = int(downloaded / total * 100)
+                    progress.progress(percent)
 
-            def hook(d):
-                if d['status'] == 'downloading':
-                    percent = d.get('_percent_str', '0%').replace('%','')
-                    try:
-                        progress.progress(int(float(percent)))
-                    except:
-                        pass
+        try:
+            for url in url_list:
 
-            filename = f"{DOWNLOAD_FOLDER}/file_{int(time.time())}.%(ext)s"
+                with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+                    info = ydl.extract_info(url, download=False)
 
-            # MP4
-            if "MP4" in format_choice:
-                ydl_opts = {
-                    'format': 'bestvideo+bestaudio/best',
-                    'merge_output_format': 'mp4',
-                    'outtmpl': filename,
-                    'progress_hooks': [hook],
-                }
+                st.subheader(info.get("title"))
+                st.image(info.get("thumbnail"), width=400)
 
-            # MP3
-            else:
-                ydl_opts = {
-                    'format': 'bestaudio/best',
-                    'outtmpl': filename,
-                    'progress_hooks': [hook],
-                    'postprocessors': [{
-                        'key': 'FFmpegExtractAudio',
-                        'preferredcodec': 'mp3',
-                        'preferredquality': '192',
-                    }],
-                }
+                duration = info.get("duration", 0)
+                views = info.get("view_count", 0)
+                uploader = info.get("uploader", "Unknown")
 
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([url])
+                st.write(f"👤 Chaîne : {uploader}")
+                st.write(f"⏱️ Durée : {duration//60} min")
+                st.write(f"👁️ Vues : {views}")
 
-            final_file = max(Path(DOWNLOAD_FOLDER).glob("file_*"), key=os.path.getctime)
+                # Choix qualité
+                if quality == "1080p":
+                    format_string = "bestvideo[height<=1080]+bestaudio/best[height<=1080]"
+                elif quality == "720p":
+                    format_string = "bestvideo[height<=720]+bestaudio/best[height<=720]"
+                elif quality == "480p":
+                    format_string = "bestvideo[height<=480]+bestaudio/best[height<=480]"
+                elif quality == "360p":
+                    format_string = "bestvideo[height<=360]+bestaudio/best[height<=360]"
+                else:
+                    format_string = "best"
 
-            with open(final_file, "rb") as f:
-                st.download_button("📥 Télécharger maintenant", f, file_name=final_file.name)
+                filename = f"{DOWNLOAD_FOLDER}/file_{int(time.time())}.%(ext)s"
 
-    except Exception as e:
-        st.error(f"❌ Erreur : {e}")
+                if "MP4" in format_choice:
+                    ydl_opts = {
+                        'format': format_string,
+                        'merge_output_format': 'mp4',
+                        'outtmpl': filename,
+                        'progress_hooks': [hook],
+                    }
+                else:
+                    ydl_opts = {
+                        'format': 'bestaudio/best',
+                        'outtmpl': filename,
+                        'progress_hooks': [hook],
+                        'postprocessors': [{
+                            'key': 'FFmpegExtractAudio',
+                            'preferredcodec': 'mp3',
+                            'preferredquality': '192',
+                        }],
+                    }
 
-# =========================
-# FOOTER
-# =========================
-st.markdown("""
-<div class="footer">
-© 2026 DAVID EDWIN • Ultimate Downloader X  
-Application officielle développée par DAVID EDWIN
-</div>
-""", unsafe_allow_html=True)
+                status_text.info("⏳ Téléchargement en cours...")
+
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([url])
+
+                final_file = max(Path(DOWNLOAD_FOLDER).glob("file_*"), key=os.path.getctime)
+
+                with open(final_file, "rb") as f:
+                    st.download_button(
+                        "📥 Télécharger maintenant",
+                        f,
+                        file_name=final_file.name
+                    )
+
+                st.success("✅ Téléchargement terminé avec succès !")
+                st.session_state.history.append(info.get("title"))
+
+            progress.empty()
+            status_text.empty()
+            st.balloons()
+
+        except Exception as e:
+            st.error(f"❌ Erreur : {e}")
