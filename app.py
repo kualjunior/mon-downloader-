@@ -21,27 +21,32 @@ PASSWORD = "ma théo123"
 if "auth" not in st.session_state:
     st.session_state.auth = False
 
+# Champ mot de passe
 if not st.session_state.auth:
     st.title("🔒 Connexion requise")
-    user_pass = st.text_input("Entrez le mot de passe :", type="password")
+    if "password_input" not in st.session_state:
+        st.session_state.password_input = ""
+    st.session_state.password_input = st.text_input("Entrez le mot de passe :", type="password")
+
     if st.button("Se connecter"):
-        if user_pass == PASSWORD:
+        if st.session_state.password_input == PASSWORD:
             st.session_state.auth = True
             st.success("✅ Authentification réussie !")
-            st.experimental_rerun()
         else:
             st.error("❌ Mot de passe incorrect")
-else:
+
+# =========================
+# Si authentifié, on affiche l'app complète
+# =========================
+if st.session_state.auth:
     # =========================
-    # CODE ULTIMATE DOWNLOADER X PRO
+    # CODE COMPLET DOWNLOADER PRO
     # =========================
 
     DOWNLOAD_FOLDER = "downloads"
     Path(DOWNLOAD_FOLDER).mkdir(exist_ok=True)
 
-    # =========================
-    # STYLE PREMIUM + SIGNATURE
-    # =========================
+    # STYLE + SIGNATURE
     st.markdown("""
     <style>
     body {background: linear-gradient(135deg,#0f2027,#1c2b36,#141E30);}
@@ -58,22 +63,16 @@ else:
     </style>
     """, unsafe_allow_html=True)
 
-    # =========================
     # HEADER
-    # =========================
     st.markdown('<p class="david-signature">DAVID EDWIN</p>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Ultimate Downloader X • Founder & Developer</p>', unsafe_allow_html=True)
     st.divider()
 
-    # =========================
     # SESSION STATE
-    # =========================
     if "history" not in st.session_state:
         st.session_state.history = []
 
-    # =========================
     # SIDEBAR
-    # =========================
     st.sidebar.title("📜 Historique")
     if st.session_state.history:
         for item in st.session_state.history:
@@ -83,30 +82,15 @@ else:
     st.sidebar.divider()
     st.sidebar.success("✔ Compatible YouTube, TikTok, Facebook, Instagram")
 
-    # =========================
     # INPUT
-    # =========================
     urls = st.text_area("🔗 Collez un ou plusieurs liens (1 par ligne)")
-
-    format_choice = st.radio(
-        "Format :",
-        ["MP4 🎥 (Vidéo)", "MP3 🎵 (Audio)"],
-        horizontal=True
-    )
-
-    quality = st.selectbox(
-        "🎞️ Qualité vidéo",
-        ["Best", "1080p", "720p", "480p", "360p"]
-    )
-
+    format_choice = st.radio("Format :", ["MP4 🎥 (Vidéo)", "MP3 🎵 (Audio)"], horizontal=True)
+    quality = st.selectbox("🎞️ Qualité vidéo", ["Best", "1080p", "720p", "480p", "360p"])
     st.divider()
 
-    # =========================
     # TELECHARGEMENT
-    # =========================
     if urls:
         url_list = [u.strip() for u in urls.split("\n") if u.strip()]
-
         if st.button("🚀 Lancer le téléchargement PRO"):
 
             progress = st.progress(0)
@@ -137,7 +121,7 @@ else:
                     st.write(f"⏱️ Durée : {duration//60} min")
                     st.write(f"👁️ Vues : {views}")
 
-                    # Choix qualité
+                    # Qualité
                     if quality == "1080p":
                         format_string = "bestvideo[height<=1080]+bestaudio/best[height<=1080]"
                     elif quality == "720p":
@@ -178,13 +162,9 @@ else:
                     final_file = max(Path(DOWNLOAD_FOLDER).glob("file_*"), key=os.path.getctime)
 
                     with open(final_file, "rb") as f:
-                        st.download_button(
-                            "📥 Télécharger maintenant",
-                            f,
-                            file_name=final_file.name
-                        )
+                        st.download_button("📥 Télécharger maintenant", f, file_name=final_file.name)
 
-                    st.success("✅ Téléchargement terminé avec succès !")
+                    st.success("✅ Téléchargement terminé !")
                     st.session_state.history.append(info.get("title"))
 
                 progress.empty()
@@ -194,11 +174,6 @@ else:
             except Exception as e:
                 st.error(f"❌ Erreur : {e}")
 
-    # =========================
     # FOOTER
-    # =========================
     st.divider()
-    st.markdown(
-        "<div style='text-align:center; opacity:0.6;'>© 2026 DAVID EDWIN • Ultimate Downloader X PRO</div>",
-        unsafe_allow_html=True
-    )
+    st.markdown("<div style='text-align:center; opacity:0.6;'>© 2026 DAVID EDWIN • Ultimate Downloader X PRO</div>", unsafe_allow_html=True)
