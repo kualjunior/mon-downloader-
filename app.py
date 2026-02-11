@@ -16,7 +16,7 @@ st.set_page_config(
 # =========================
 # MOT DE PASSE
 # =========================
-PASSWORD = "ma théo123"
+PASSWORD = "théo123"
 
 if "auth" not in st.session_state:
     st.session_state.auth = False
