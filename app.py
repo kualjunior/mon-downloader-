@@ -10,15 +10,14 @@ from pathlib import Path
 st.set_page_config(
     page_title="Ultimate Downloader X",
     page_icon="🚀",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
 DOWNLOAD_FOLDER = "downloads"
 Path(DOWNLOAD_FOLDER).mkdir(exist_ok=True)
 
 # =========================
-# ULTRA PREMIUM CSS
+# STYLE ULTRA PREMIUM + SIGNATURE
 # =========================
 st.markdown("""
 <style>
@@ -29,7 +28,6 @@ body {
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
 }
-
 @keyframes gradientBG {
     0% {background-position: 0% 50%;}
     50% {background-position: 100% 50%;}
@@ -57,13 +55,11 @@ body {
     border: none;
     transition: 0.3s;
 }
-
 .stButton>button:hover {
     transform: scale(1.05);
     box-shadow: 0 0 20px #ff4b2b;
 }
 
-/* Download button */
 .stDownloadButton>button {
     width: 100%;
     border-radius: 12px;
@@ -74,22 +70,55 @@ body {
     border: none;
     transition: 0.3s;
 }
-
 .stDownloadButton>button:hover {
     transform: scale(1.05);
     box-shadow: 0 0 20px #00e676;
 }
 
-/* Titres stylés */
-h1 {
-    text-align: center;
-    font-size: 3em;
-    background: -webkit-linear-gradient(#ff416c,#ff4b2b);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+/* DAVID EDWIN Glow */
+@keyframes glow {
+    0% { text-shadow: 0 0 5px #ff416c, 0 0 10px #ff4b2b; }
+    50% { text-shadow: 0 0 25px #ff416c, 0 0 40px #ff4b2b; }
+    100% { text-shadow: 0 0 5px #ff416c, 0 0 10px #ff4b2b; }
 }
 
-/* Sidebar */
+.david-name {
+    font-size: 3.5em;
+    font-weight: 900;
+    text-align: center;
+    background: linear-gradient(90deg,#ff416c,#ff4b2b,#ff416c);
+    background-size: 200% auto;
+    color: transparent;
+    -webkit-background-clip: text;
+    animation: glow 2s infinite alternate;
+    margin-bottom: 0;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 1.2em;
+    color: #cccccc;
+    letter-spacing: 2px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 30px;
+    background: linear-gradient(90deg,#00c853,#64dd17);
+    color: black;
+    font-weight: bold;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+.footer-signature {
+    text-align: center;
+    font-size: 0.9em;
+    opacity: 0.6;
+    margin-top: 50px;
+}
+
 section[data-testid="stSidebar"] {
     background: rgba(0,0,0,0.6);
     backdrop-filter: blur(10px);
@@ -99,18 +128,25 @@ section[data-testid="stSidebar"] {
 """, unsafe_allow_html=True)
 
 # =========================
-# HEADER HERO
+# HEADER SIGNATURE
 # =========================
-st.markdown("<h1>🚀 Ultimate Downloader X</h1>", unsafe_allow_html=True)
+st.markdown('<p class="david-name">DAVID EDWIN</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Ultimate Downloader X</p>', unsafe_allow_html=True)
 st.markdown(
-    "<div style='text-align:center; font-size:18px;'>Téléchargez vos vidéos & musiques avec style ⚡</div>",
+    "<div style='text-align:center;'><span class='badge'>Founder & Developer</span></div>",
     unsafe_allow_html=True
 )
-
 st.markdown("<br>", unsafe_allow_html=True)
 
 # =========================
-# URL INPUT CARD
+# SIDEBAR SIGNATURE
+# =========================
+st.sidebar.markdown("## 👑 DAVID EDWIN")
+st.sidebar.markdown("Founder & Developer")
+st.sidebar.markdown("---")
+
+# =========================
+# INPUT URL
 # =========================
 st.markdown('<div class="glass">', unsafe_allow_html=True)
 url = st.text_input("🔗 Collez votre lien ici")
@@ -123,9 +159,6 @@ if url:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # =========================
-        # VIDEO CARD
-        # =========================
         col1, col2 = st.columns([1,2])
 
         with col1:
@@ -143,18 +176,13 @@ if url:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # =========================
-        # TABS PREMIUM
-        # =========================
         tab1, tab2 = st.tabs(["🎥 Télécharger Vidéo", "🎵 Télécharger Audio"])
 
-        # -------------------------
         # VIDEO
-        # -------------------------
         with tab1:
             st.markdown('<div class="glass">', unsafe_allow_html=True)
 
-            quality = st.selectbox("Qualité :", ["1080p", "720p", "480p", "360p"])
+            quality = st.selectbox("Qualité :", ["1080", "720", "480", "360"])
             format_video = st.selectbox("Format :", ["mp4", "mkv", "webm"])
 
             if st.button("🚀 Télécharger la Vidéo"):
@@ -171,7 +199,7 @@ if url:
                 filename = f"{DOWNLOAD_FOLDER}/video_{int(time.time())}.%(ext)s"
 
                 ydl_opts = {
-                    'format': f'bestvideo[height<={quality[:-1]}]+bestaudio/best',
+                    'format': f'bestvideo[height<={quality}]+bestaudio/best',
                     'merge_output_format': format_video,
                     'outtmpl': filename,
                     'progress_hooks': [hook],
@@ -187,9 +215,7 @@ if url:
 
             st.markdown('</div>', unsafe_allow_html=True)
 
-        # -------------------------
         # AUDIO
-        # -------------------------
         with tab2:
             st.markdown('<div class="glass">', unsafe_allow_html=True)
 
@@ -233,5 +259,12 @@ if url:
     except Exception as e:
         st.error(f"❌ Erreur : {e}")
 
-st.markdown("<br><hr>", unsafe_allow_html=True)
-st.markdown("<center>Ultimate Downloader X • 2026 • UI Premium</center>", unsafe_allow_html=True)
+# =========================
+# FOOTER
+# =========================
+st.markdown("""
+<div class="footer-signature">
+© 2026 DAVID EDWIN • Ultimate Downloader X • All Rights Reserved  
+Développé avec passion 🔥
+</div>
+""", unsafe_allow_html=True)
