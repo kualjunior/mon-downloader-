@@ -5,196 +5,206 @@ import time
 from pathlib import Path
 
 # =========================
-# CONFIG PAGE
+# CONFIGURATION PAGE
 # =========================
 st.set_page_config(
-    page_title="Ultimate Downloader X PRO",
+    page_title="Ultimate Downloader X",
     page_icon="🚀",
     layout="wide"
 )
 
-# =========================
-# CONSTANTES
-# =========================
-PASSWORD = "théo123"
 DOWNLOAD_FOLDER = "downloads"
 Path(DOWNLOAD_FOLDER).mkdir(exist_ok=True)
 
 # =========================
-# STYLE GLOBAL
+# STYLE CYBER FUTURISTE
 # =========================
 st.markdown("""
 <style>
-[data-testid="stAppViewContainer"] {
-    background: linear-gradient(180deg, #0f172a, #111827);
-    color: #f1f5f9;
-    font-family: 'Segoe UI', sans-serif;
+
+/* BODY: fond animé, gradient + étoiles */
+body {
+    margin:0;
+    background: radial-gradient(circle at top, #0f2027, #141E30 70%);
+    background-size: 400% 400%;
+    animation: gradientBG 20s ease infinite;
+    font-family: 'Arial', sans-serif;
+    color: white;
 }
 
-.david-signature {
-    font-size: 4em;
-    font-weight: 800;
+@keyframes gradientBG {
+    0% {background-position:0% 50%;}
+    50% {background-position:100% 50%;}
+    100% {background-position:0% 50%;}
+}
+
+/* NOM DAVID EDWIN 3D NEON BLEU */
+@keyframes neonGlow {
+    0% {
+        text-shadow: 0 0 5px #00c6ff,0 0 10px #00c6ff,0 0 20px #0072ff,0 0 40px #0072ff;
+        transform: rotateY(0deg);
+    }
+    50% {
+        text-shadow: 0 0 20px #00e0ff,0 0 40px #00e0ff,0 0 80px #0099ff,0 0 120px #0099ff;
+        transform: rotateY(5deg);
+    }
+    100% {
+        text-shadow: 0 0 5px #00c6ff,0 0 10px #00c6ff,0 0 20px #0072ff,0 0 40px #0072ff;
+        transform: rotateY(0deg);
+    }
+}
+
+.david-name {
+    font-size: 8em;
+    font-weight: 900;
     text-align: center;
-    color: #38bdf8;
+    color: #00c6ff;
+    animation: neonGlow 3s infinite alternate;
+    letter-spacing: 8px;
     margin-bottom: 0;
 }
 
+/* Sous-titre futuriste */
 .subtitle {
     text-align: center;
-    font-size: 1.2em;
-    color: #94a3b8;
-    margin-top: -5px;
+    font-size: 1.8em;
+    color: #cccccc;
+    letter-spacing: 4px;
+    margin-bottom: 20px;
 }
 
-.stButton>button, .stDownloadButton>button {
-    width: 100%;
-    border-radius: 10px;
-    height: 3em;
-    font-weight: 600;
-    border: none;
-    transition: 0.2s ease-in-out;
+/* Carte centrale glass */
+.glass {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(15px);
+    border-radius: 25px;
+    padding: 30px;
+    margin: auto;
+    max-width: 800px;
+    box-shadow: 0 0 50px rgba(0,198,255,0.6);
+    border: 1px solid rgba(0,198,255,0.3);
 }
 
+/* Boutons futuristes */
 .stButton>button {
-    background: #38bdf8;
-    color: black;
+    width: 100%;
+    border-radius: 15px;
+    height: 3.2em;
+    font-weight: bold;
+    font-size: 1em;
+    background: linear-gradient(90deg,#0072ff,#00c6ff);
+    color: white;
+    border: none;
+    transition: 0.3s;
 }
-
 .stButton>button:hover {
-    background: #0ea5e9;
-    transform: translateY(-2px);
+    transform: scale(1.08);
+    box-shadow: 0 0 30px #00c6ff;
 }
 
 .stDownloadButton>button {
-    background: #22c55e;
+    width: 100%;
+    border-radius: 15px;
+    height: 3.2em;
+    background: linear-gradient(90deg,#00c6ff,#0072ff);
     color: white;
+    font-weight: bold;
+    border: none;
+    transition: 0.3s;
+}
+
+/* Progress bar glow */
+.stProgress > div > div > div > div {
+    background: linear-gradient(90deg,#00c6ff,#0072ff);
+    box-shadow: 0 0 15px #00c6ff;
+}
+
+/* Footer futuriste */
+.footer {
+    text-align: center;
+    font-size: 0.95em;
+    opacity: 0.7;
+    margin-top: 50px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 # =========================
-# SESSION STATE
+# HEADER AVEC NOM + LOGO
 # =========================
-if "auth" not in st.session_state:
-    st.session_state.auth = False
-
-if "history" not in st.session_state:
-    st.session_state.history = []
+st.markdown('<p class="david-name">David Edwin</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Ultimate Downloader X • Founder & Developer</p>', unsafe_allow_html=True)
 
 # =========================
-# AUTHENTIFICATION
+# CARTE CENTRALE POUR URL + FORMAT
 # =========================
-if not st.session_state.auth:
-    st.title("🔒 Connexion requise")
-    password_input = st.text_input("Entrez le mot de passe :", type="password")
-    if st.button("Se connecter"):
-        if password_input == PASSWORD:
-            st.session_state.auth = True
-            st.success("✅ Authentification réussie !")
-        else:
-            st.error("❌ Mot de passe incorrect")
+st.markdown('<div class="glass">', unsafe_allow_html=True)
+url = st.text_input("🔗 Collez votre lien ici")
+format_choice = st.radio("Choisissez le format :", ["MP4 🎥", "MP3 🎵"], horizontal=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================
-# APPLICATION PRINCIPALE
+# TELECHARGEMENT AVEC PROGRESS BAR
 # =========================
-if st.session_state.auth:
-    # HEADER
-    st.markdown('<p class="david-signature">DAVID EDWIN</p>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">Ultimate Downloader X • Founder & Developer</p>', unsafe_allow_html=True)
-    st.divider()
+if url:
+    try:
+        with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+            info = ydl.extract_info(url, download=False)
 
-    # SIDEBAR - Historique
-    st.sidebar.title("📜 Historique")
-    if st.session_state.history:
-        for item in st.session_state.history:
-            st.sidebar.write("•", item)
-    else:
-        st.sidebar.info("Aucun téléchargement pour le moment.")
-    st.sidebar.divider()
-    st.sidebar.success("✔ Compatible YouTube, TikTok, Facebook, Instagram")
+        st.image(info.get("thumbnail"), use_container_width=True)
+        st.subheader(info.get("title"))
 
-    # INPUT URLS
-    urls = st.text_area("🔗 Collez un ou plusieurs liens (1 par ligne)")
-    format_choice = st.radio("Format :", ["MP4 🎥 (Vidéo)", "MP3 🎵 (Audio)"], horizontal=True)
-    quality = st.selectbox("🎞️ Qualité vidéo", ["Best", "1080p", "720p", "480p", "360p"])
-    st.divider()
+        if st.button("🚀 Télécharger maintenant"):
 
-    # FONCTION DE TÉLÉCHARGEMENT
-    def download_video(url, format_choice, quality):
-        # Détermination du format
-        if format_choice == "MP4 🎥 (Vidéo)":
-            if quality == "1080p":
-                fmt = "bestvideo[height<=1080]+bestaudio/best[height<=1080]"
-            elif quality == "720p":
-                fmt = "bestvideo[height<=720]+bestaudio/best[height<=720]"
-            elif quality == "480p":
-                fmt = "bestvideo[height<=480]+bestaudio/best[height<=480]"
-            elif quality == "360p":
-                fmt = "bestvideo[height<=360]+bestaudio/best[height<=360]"
+            progress = st.progress(0)
+
+            def hook(d):
+                if d['status'] == 'downloading':
+                    percent = d.get('_percent_str', '0%').replace('%','')
+                    try:
+                        progress.progress(int(float(percent)))
+                    except:
+                        pass
+
+            filename = f"{DOWNLOAD_FOLDER}/file_{int(time.time())}.%(ext)s"
+
+            if "MP4" in format_choice:
+                ydl_opts = {
+                    'format': 'bestvideo+bestaudio/best',
+                    'merge_output_format': 'mp4',
+                    'outtmpl': filename,
+                    'progress_hooks': [hook],
+                }
             else:
-                fmt = "best"
-            ydl_opts = {
-                'format': fmt,
-                'merge_output_format': 'mp4',
-                'outtmpl': f'{DOWNLOAD_FOLDER}/file_%(id)s.%(ext)s',
-                'progress_hooks': [progress_hook]
-            }
-        else:
-            ydl_opts = {
-                'format': 'bestaudio/best',
-                'outtmpl': f'{DOWNLOAD_FOLDER}/file_%(id)s.%(ext)s',
-                'progress_hooks': [progress_hook],
-                'postprocessors': [{
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': '192',
-                }],
-            }
+                ydl_opts = {
+                    'format': 'bestaudio/best',
+                    'outtmpl': filename,
+                    'progress_hooks': [hook],
+                    'postprocessors': [{
+                        'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'mp3',
+                        'preferredquality': '192',
+                    }],
+                }
 
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=True)
-        st.session_state.history.append(info.get("title"))
-        return info
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([url])
 
-    # PROGRESS HOOK
-    progress_bar = st.empty()
-    status_text = st.empty()
-    def progress_hook(d):
-        if d['status'] == 'downloading':
-            total = d.get('total_bytes') or d.get('total_bytes_estimate')
-            downloaded = d.get('downloaded_bytes', 0)
-            if total:
-                percent = int(downloaded / total * 100)
-                progress_bar.progress(percent)
-        elif d['status'] == 'finished':
-            progress_bar.empty()
-            status_text.success("✅ Téléchargement terminé !")
+            final_file = max(Path(DOWNLOAD_FOLDER).glob("file_*"), key=os.path.getctime)
 
-    # LANCER LE TÉLÉCHARGEMENT
-    if urls:
-        url_list = [u.strip() for u in urls.split("\n") if u.strip()]
-        if st.button("🚀 Lancer le téléchargement PRO"):
-            for url in url_list:
-                try:
-                    status_text.info("⏳ Téléchargement en cours...")
-                    info = download_video(url, format_choice, quality)
+            with open(final_file, "rb") as f:
+                st.download_button("📥 Télécharger maintenant", f, file_name=final_file.name)
 
-                    # Affichage info vidéo
-                    st.subheader(info.get("title"))
-                    st.image(info.get("thumbnail"), width=400)
-                    st.write(f"👤 Chaîne : {info.get('uploader', 'Unknown')}")
-                    st.write(f"⏱️ Durée : {info.get('duration', 0)//60} min")
-                    st.write(f"👁️ Vues : {info.get('view_count', 0)}")
+    except Exception as e:
+        st.error(f"❌ Erreur : {e}")
 
-                    # Bouton de téléchargement
-                    final_file = max(Path(DOWNLOAD_FOLDER).glob(f"file_*"), key=os.path.getctime)
-                    with open(final_file, "rb") as f:
-                        st.download_button("📥 Télécharger maintenant", f, file_name=final_file.name)
-
-                except Exception as e:
-                    st.error(f"❌ Erreur : {e}")
-
-    # FOOTER
-    st.divider()
-    st.markdown("<div style='text-align:center; opacity:0.6;'>© 2026 DAVID EDWIN • Ultimate Downloader X PRO</div>", unsafe_allow_html=True)
+# =========================
+# FOOTER FUTURISTE
+# =========================
+st.markdown("""
+<div class="footer">
+© 2026 David Edwin • Ultimate Downloader X  
+Développé avec passion par David Edwin
+</div>
+""", unsafe_allow_html=True)
