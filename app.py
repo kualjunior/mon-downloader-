@@ -2,18 +2,88 @@ import streamlit as st
 import yt_dlp
 import os
 import time
-import shutil
 from pathlib import Path
 from datetime import datetime
 
 # =========================
-# CONFIG
+# CONFIG PRO VERSION
 # =========================
 st.set_page_config(
     page_title="Ultimate Downloader X PRO MAX",
     page_icon="🚀",
-    layout="wide"
+    layout="centered",  # mieux pour mobile
+    initial_sidebar_state="collapsed"
 )
+
+# =========================
+# CUSTOM CSS (Modern + Mobile)
+# =========================
+st.markdown("""
+<style>
+
+/* Background */
+.stApp {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: white;
+}
+
+/* Main container */
+.block-container {
+    padding-top: 1.5rem;
+    padding-bottom: 1rem;
+    max-width: 800px;
+}
+
+/* Titles */
+h1, h2, h3 {
+    text-align: center;
+}
+
+/* Buttons */
+div.stButton > button {
+    width: 100%;
+    height: 3.5em;
+    font-size: 18px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #ff416c, #ff4b2b);
+    color: white;
+    border: none;
+}
+
+div.stButton > button:hover {
+    transform: scale(1.02);
+    transition: 0.2s;
+}
+
+/* Inputs */
+div[data-baseweb="input"] > div {
+    height: 3em;
+    border-radius: 10px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .block-container {
+        padding: 0.5rem;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =========================
+# HEADER
+# =========================
+st.markdown("""
+<h1>🚀 Ultimate Downloader X PRO MAX</h1>
+<p style='text-align:center; font-size:18px;'>
+Télécharge tes vidéos et audios facilement ⚡
+</p>
+""", unsafe_allow_html=True)
 
 PASSWORD = "théo123"
 DOWNLOAD_FOLDER = "downloads"
