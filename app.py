@@ -3,43 +3,31 @@ import yt_dlp
 import os
 import time
 from pathlib import Path
-from datetime import datetime
 
 # =========================
-# CONFIG PRO VERSION
+# CONFIG
 # =========================
 st.set_page_config(
     page_title="Ultimate Downloader X PRO MAX",
     page_icon="🚀",
-    layout="centered",  # mieux pour mobile
+    layout="centered",
     initial_sidebar_state="collapsed"
 )
 
 # =========================
-# CUSTOM CSS (Modern + Mobile)
+# STYLE
 # =========================
 st.markdown("""
 <style>
-
-/* Background */
 .stApp {
     background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
     color: white;
 }
-
-/* Main container */
 .block-container {
     padding-top: 1.5rem;
-    padding-bottom: 1rem;
     max-width: 800px;
 }
-
-/* Titles */
-h1, h2, h3 {
-    text-align: center;
-}
-
-/* Buttons */
+h1, h2, h3 { text-align: center; }
 div.stButton > button {
     width: 100%;
     height: 3.5em;
@@ -49,52 +37,29 @@ div.stButton > button {
     color: white;
     border: none;
 }
-
 div.stButton > button:hover {
     transform: scale(1.02);
     transition: 0.2s;
 }
-
-/* Inputs */
-div[data-baseweb="input"] > div {
-    height: 3em;
-    border-radius: 10px;
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-    .block-container {
-        padding: 0.5rem;
-    }
-
-    h1 {
-        font-size: 22px;
-    }
-}
-
 </style>
 """, unsafe_allow_html=True)
 
 # =========================
-# HEADER
+# CONSTANTS
 # =========================
-st.markdown("""
-<h1>🚀 Ultimate Downloader X PRO MAX</h1>
-<p style='text-align:center; font-size:18px;'>
-Télécharge tes vidéos et audios facilement ⚡
-</p>
-""", unsafe_allow_html=True)
-
 PASSWORD = "théo123"
 DOWNLOAD_FOLDER = "downloads"
 Path(DOWNLOAD_FOLDER).mkdir(exist_ok=True)
 
 # =========================
-# CLEAN OLD FILES (auto cleanup > 1h)
+# CLEAN OLD FILES (>1h)
 # =========================
 for file in Path(DOWNLOAD_FOLDER).glob("*"):
-    if time.time() - file.stat().st_mtime > 3600:
-        file.unlink()
+    try:
+        if file.is_file() and time.time() - file.stat().st_mtime > 3600:
+            file.unlink()
+    except:
+        pass
 
 # =========================
 # SESSION
@@ -109,12 +74,13 @@ if "history" not in st.session_state:
 # LOGIN
 # =========================
 if not st.session_state.auth:
-    st.title("🔒 Connexion sécurisée")
+    st.markdown("<h1>🔒 Connexion sécurisée</h1>", unsafe_allow_html=True)
     password_input = st.text_input("Mot de passe", type="password")
+
     if st.button("Connexion"):
         if password_input == PASSWORD:
             st.session_state.auth = True
-            st.success("Accès autorisé")
+            st.rerun()
         else:
             st.error("Mot de passe incorrect")
 
@@ -123,7 +89,8 @@ if not st.session_state.auth:
 # =========================
 if st.session_state.auth:
 
-    st.title("🚀 Ultimate Downloader X PRO MAX")
+    st.markdown("<h1>🚀 Ultimate Downloader X PRO MAX</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center;'>Télécharge tes vidéos et audios facilement ⚡</p>", unsafe_allow_html=True)
     st.divider()
 
     # SIDEBAR
@@ -142,9 +109,16 @@ if st.session_state.auth:
     # INPUTS
     url = st.text_input("🔗 URL de la vidéo")
     custom_name = st.text_input("✏ Nom personnalisé (optionnel)")
-    format_choice = st.radio("Format", ["Vidéo MP4", "Audio MP3"])
-    quality = st.selectbox("Qualité vidéo", ["best", "1080", "720", "480", "360"])
-    bitrate = st.selectbox("Qualité audio (kbps)", ["128", "192", "256", "320"])
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        format_choice = st.radio("Format", ["Vidéo MP4", "Audio MP3"])
+
+    with col2:
+        quality = st.selectbox("Qualité vidéo", ["best", "1080", "720", "480", "360"])
+        bitrate = st.selectbox("Qualité audio (kbps)", ["128", "192", "256", "320"])
+
     download_playlist = st.checkbox("Télécharger playlist complète")
 
     progress = st.progress(0)
@@ -157,7 +131,7 @@ if st.session_state.auth:
             if total:
                 percent = int(downloaded / total * 100)
                 progress.progress(percent)
-        if d['status'] == 'finished':
+        elif d['status'] == 'finished':
             progress.progress(100)
 
     if st.button("🚀 Télécharger") and url:
@@ -168,19 +142,24 @@ if st.session_state.auth:
             with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
                 info = ydl.extract_info(url, download=False)
 
-            st.subheader(info.get("title"))
-            st.image(info.get("thumbnail"), width=400)
-            st.write("👤 Uploader :", info.get("uploader"))
-            st.write("⏱ Durée :", round(info.get("duration", 0) / 60, 2), "minutes")
-            st.write("👁 Vues :", info.get("view_count"))
-            st.write("🎞 Résolution :", info.get("resolution"))
-            st.write("🎬 FPS :", info.get("fps"))
+            st.subheader(info.get("title", "Vidéo"))
+            if info.get("thumbnail"):
+                st.image(info.get("thumbnail"), use_container_width=True)
 
-            filename = custom_name if custom_name else f"file_{int(time.time())}"
+            duration = info.get("duration")
+            if duration:
+                st.write("⏱ Durée :", round(duration / 60, 2), "minutes")
+
+            filename = custom_name.strip() if custom_name else f"file_{int(time.time())}"
             output_template = f"{DOWNLOAD_FOLDER}/{filename}.%(ext)s"
 
+            # FORMAT FIX
             if format_choice == "Vidéo MP4":
-                fmt = f"bestvideo[height<={quality}]+bestaudio/best"
+                if quality == "best":
+                    fmt = "bestvideo+bestaudio/best"
+                else:
+                    fmt = f"bestvideo[height<={quality}]+bestaudio/best"
+
                 ydl_opts = {
                     'format': fmt,
                     'merge_output_format': 'mp4',
@@ -188,6 +167,7 @@ if st.session_state.auth:
                     'progress_hooks': [hook],
                     'noplaylist': not download_playlist
                 }
+
             else:
                 ydl_opts = {
                     'format': 'bestaudio/best',
@@ -206,13 +186,22 @@ if st.session_state.auth:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
 
-            latest_file = max(Path(DOWNLOAD_FOLDER).glob(f"{filename}*"), key=os.path.getctime)
+            files = list(Path(DOWNLOAD_FOLDER).glob(f"{filename}*"))
+            if files:
+                latest_file = max(files, key=os.path.getctime)
 
-            with open(latest_file, "rb") as f:
-                st.download_button("📥 Télécharger le fichier", f, file_name=latest_file.name)
+                with open(latest_file, "rb") as f:
+                    st.download_button(
+                        "📥 Télécharger le fichier",
+                        f,
+                        file_name=latest_file.name
+                    )
 
-            st.success("Téléchargement terminé !")
-            st.session_state.history.append(info.get("title"))
+                st.success("Téléchargement terminé ✅")
+                st.session_state.history.append(info.get("title", "Vidéo"))
+
+            else:
+                st.error("Fichier introuvable après téléchargement.")
 
         except Exception as e:
             st.error(f"Erreur : {e}")
