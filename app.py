@@ -151,13 +151,11 @@ with tabs:
         w = len(txt.split())
         st.write(f"Mots: {w} | Temps de lecture: {max(1, w//200)} min")
 
-# --- [F11] DATA ENGINE ---
-with tabs:
-    st.subheader("📊 [F11] Report Generator")
-    if st.button("Générer Table de Test"):
-        df = pd.DataFrame({'ID':, 'Value': ['99.9%', '85.2%', '91.0%']})
-        st.table(df)
-        st.download_button("Export CSV", df.to_csv(index=False), "report.csv")
+# Version corrigée avec les IDs pour correspondre aux 3 valeurs
+df = pd.DataFrame({
+    'ID':, 
+    'Value': ['99.9%', '85.2%', '91.0%']
+})
 
 # --- [F12] DEV LAB ---
 with tabs:
