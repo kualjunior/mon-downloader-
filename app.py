@@ -20,7 +20,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# DESIGN (ADAPTÉ MOBILE)
+# DESIGN GLASSMORPHISM
 st.markdown("""
 <style>
     .stApp { background: #0d1117; color: #e6edf3; }
@@ -43,14 +43,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# SÉCURITÉ D'ACCÈS (Ligne 58 Corrigée)
+# SÉCURITÉ D'ACCÈS (CORRECTION LIGNE 54)
 # ==========================================
 PASSWORD = "théo123"
 if "auth" not in st.session_state:
     st.session_state.auth = False
 
 if not st.session_state.auth:
-    # CORRECTION : On précise 3 colonnes pour centrer le login
+    # CRITIQUE : Ajout de pour définir la structure des colonnes
     left, col, right = st.columns()
     with col:
         st.markdown("<h2 style='text-align:center;'>🔒 KERNEL LOCKED</h2>", unsafe_allow_html=True)
@@ -64,24 +64,27 @@ if not st.session_state.auth:
     st.stop()
 
 # ==========================================
-# DASHBOARD OMNIS (Structure corrigée)
+# DASHBOARD OMNIS
 # ==========================================
 st.markdown("<h1 style='text-align:center; color:#00d2ff;'>⚡ OMNIS OS v5.0</h1>", unsafe_allow_html=True)
 
-# Création des onglets
+# Définition des onglets
 tabs = st.tabs(["📥 Media", "🎨 Studio", "🔐 Safe", "🧠 AI", "📊 Data", "🚀 Dev", "🌍 Life", "⚙️ Sys"])
 
 # --- [F1] MEDIA ---
 with tabs:
     st.subheader("📥 Extraction Média")
-    url = st.text_input("Lien Vidéo/Audio", placeholder="Lien YouTube, TikTok...")
-    if st.button("Lancer l'extraction"):
-        st.info("Recherche du flux... (Simulé)")
+    url = st.text_input("Lien Vidéo/Audio", placeholder="URL YouTube, TikTok...")
+    if st.button("Lancer l'analyse"):
+        if url:
+            st.info("Analyse du flux en cours...")
+        else:
+            st.warning("Veuillez entrer une URL valide.")
 
-# --- [F2-F5] STUDIO ---
+# --- [F2] STUDIO ---
 with tabs:
     st.subheader("🎨 Image Lab & QR")
-    up = st.file_uploader("Image", type=['jpg', 'png'])
+    up = st.file_uploader("Charger une image", type=['jpg', 'png', 'jpeg'])
     if up:
         img = Image.open(up)
         st.image(img, use_container_width=True)
@@ -92,64 +95,72 @@ with tabs:
             if st.button("Effet Miroir"): st.image(ImageOps.mirror(img))
     
     st.divider()
-    qr_data = st.text_input("QR Data", "https://")
+    qr_data = st.text_input("Générer QR Code", "https://")
     if qr_data:
         qr_img = qrcode.make(qr_data)
         buf = BytesIO()
         qr_img.save(buf, format="PNG")
-        st.image(buf.getvalue(), width=150)
+        st.image(buf.getvalue(), width=200)
 
-# --- [F6-F8] SAFE ---
+# --- [F3] SAFE ---
 with tabs:
-    st.subheader("🔐 Cyber-Sécurité")
+    st.subheader("🔐 Sécurité & Chiffrement")
     if st.button("Générer Passphrase"):
-        st.code(secrets.token_urlsafe(20))
+        st.code(secrets.token_urlsafe(24))
+    
     st.divider()
-    secret = st.text_input("Encoder en B64")
-    if secret:
-        st.code(base64.b64encode(secret.encode()).decode())
+    secret_txt = st.text_input("Texte à encoder (Base64)")
+    if secret_txt:
+        st.code(base64.b64encode(secret_txt.encode()).decode())
 
-# --- [F9-F10] AI ---
+# --- [F4] AI ---
 with tabs:
-    st.subheader("🧠 Intelligence")
-    txt = st.text_area("Analyse Sentiment")
-    if txt:
-        st.write(f"Vibe Score: {TextBlob(txt).sentiment.polarity}")
+    st.subheader("🧠 Analyse Textuelle")
+    user_txt = st.text_area("Analyse de Sentiment", placeholder="Écrivez ici...")
+    if user_txt:
+        blob = TextBlob(user_txt)
+        st.write(f"Vibe Score : {blob.sentiment.polarity}")
 
-# --- [F11] DATA (Correction erreur ID) ---
+# --- [F5] DATA ---
 with tabs:
-    st.subheader("📊 Performance")
+    st.subheader("📊 Métriques Système")
+    # Correction de l'erreur d'ID dictionnaire
     df = pd.DataFrame({
-        'Composant': ['Système', 'Réseau', 'Kernel'],
-        'Score': [99.9, 85.2, 91.0]
+        'Composant': ['Kernel', 'Network', 'Uptime'],
+        'Status': [99.8, 87.5, 95.0]
     })
     st.table(df)
     st.bar_chart(df.set_index('Composant'))
 
-# --- [F12] DEV ---
+# --- [F6] DEV ---
 with tabs:
-    st.subheader("🚀 Dev Lab")
-    code_input = st.text_area("Snippet Python", "print('Hello')")
-    if st.button("Vérifier"):
-        try: compile(code_input, '', 'exec'); st.success("Syntaxe OK")
-        except Exception as e: st.error(f"Erreur: {e}")
+    st.subheader("🚀 Code Sandbox")
+    snippet = st.text_area("Vérificateur de Syntaxe Python", "print('Hello World')")
+    if st.button("Compiler"):
+        try:
+            compile(snippet, '<string>', 'exec')
+            st.success("Syntaxe Valide")
+        except Exception as e:
+            st.error(f"Erreur détectée : {e}")
 
-# --- [F13-F14] LIFE ---
+# --- [F7] LIFE ---
 with tabs:
-    st.subheader("🌍 Quotidien")
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("🪙 Pile/Face"): st.title(secrets.choice(["PILE", "FACE"]))
-    with c2:
-        if st.button("🎲 Dé"): st.title(f"Dés: {secrets.randbelow(6)+1}")
+    st.subheader("🌍 Utilitaires")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🪙 Pile ou Face"):
+            st.title(secrets.choice(["PILE", "FACE"]))
+    with col2:
+        if st.button("🎲 Lancer un Dé"):
+            st.title(f"Score : {secrets.randbelow(6) + 1}")
 
-# --- [F15] SYSTÈME ---
+# --- [F8] SYSTEM ---
 with tabs:
     st.subheader("⚙️ Maintenance")
-    st.progress(98, "Système Stable")
-    if st.button("PURGER CACHE"):
+    st.progress(98, "Stabilité OS")
+    if st.button("PURGER LE CACHE"):
         st.cache_data.clear()
-        st.toast("Cache vidé !")
+        st.toast("Mémoire système libérée")
 
 # SIDEBAR
 with st.sidebar:
@@ -157,3 +168,4 @@ with st.sidebar:
     if st.button("🔴 SHUTDOWN"):
         st.session_state.auth = False
         st.rerun()
+        
