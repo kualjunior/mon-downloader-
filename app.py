@@ -5,102 +5,62 @@ import time
 import requests
 from pathlib import Path
 from streamlit_lottie import st_lottie
-from streamlit_js_eval import streamlit_js_eval
+from PIL import Image, ImageFilter, ImageEnhance
 
 # =========================
 # CONFIGURATION PRO
 # =========================
 st.set_page_config(
-    page_title="UltraStream X - PRO MAX",
-    page_icon="💎",
+    page_title="UltraStream X - Ultimate OS",
+    page_icon="🌌",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Fonction pour charger les animations Lottie
 def load_lottieurl(url: str):
-    r = requests.get(url)
-    return r.json() if r.status_code == 200 else None
+    try:
+        r = requests.get(url)
+        return r.json() if r.status_code == 200 else None
+    except: return None
 
 lottie_rocket = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_96bovdur.json")
 lottie_loading = load_lottieurl("https://assets9.lottiefiles.com/packages/lf20_raiw2hsc.json")
 
 # =========================
-# STYLE & JAVASCRIPT (PARTICULES)
+# STYLE CYBERPUNK AMÉLIORÉ
 # =========================
 st.markdown("""
 <style>
-    /* Import Google Font */
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap');
 
-    .stApp {
-        background: #050505;
-        font-family: 'Inter', sans-serif;
-    }
-
-    /* Titre Cyberpunk */
+    .stApp { background: #08080a; font-family: 'Rajdhani', sans-serif; }
+    
     .main-title {
         font-family: 'Orbitron', sans-serif;
         font-size: 3.5rem !important;
-        font-weight: 700;
-        background: linear-gradient(90deg, #00f2fe, #4facfe, #7000ff);
+        background: linear-gradient(90deg, #00f2fe, #7000ff, #00f2fe);
+        background-size: 200% auto;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
-        letter-spacing: 3px;
-        margin-top: -50px;
+        animation: shine 3s linear infinite;
     }
 
-    /* Cartes Glassmorphism */
-    div.stSelectbox, div.stTextInput, div.stNumberInput {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        border: 1px solid rgba(0, 242, 254, 0.2);
-        padding: 5px;
-    }
+    @keyframes shine { to { background-position: 200% center; } }
 
-    /* Bouton Rayonnant */
-    .stButton > button {
-        width: 100%;
-        background: linear-gradient(45deg, #00f2fe, #7000ff) !important;
+    /* Glassmorphism Tabs */
+    .stTabs [data-baseweb="tab-list"] { gap: 10px; }
+    .stTabs [data-baseweb="tab"] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-radius: 10px 10px 0 0 !important;
         color: white !important;
-        border: none !important;
-        border-radius: 15px !important;
-        font-family: 'Orbitron', sans-serif;
-        padding: 1rem !important;
-        font-size: 1.2rem !important;
-        transition: 0.4s;
-        box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
-    }
-    .stButton > button:hover {
-        transform: scale(1.03);
-        box-shadow: 0 0 30px rgba(112, 0, 255, 0.6);
+        padding: 10px 20px !important;
     }
 </style>
-
-<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-<div id="particles-js" style="position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1;"></div>
-<script>
-    particlesJS("particles-js", {
-        "particles": {
-            "number": {"value": 80, "density": {"enable": true, "value_area": 800}},
-            "color": {"value": "#00f2fe"},
-            "shape": {"type": "circle"},
-            "opacity": {"value": 0.5, "random": false},
-            "size": {"value": 3, "random": true},
-            "line_linked": {"enable": true, "distance": 150, "color": "#7000ff", "opacity": 0.4, "width": 1},
-            "move": {"enable": true, "speed": 2, "direction": "none", "random": false, "straight": false, "out_mode": "out"}
-        },
-        "interactivity": {
-            "detect_on": "canvas",
-            "events": {"onhover": {"enable": true, "mode": "repulse"}, "onclick": {"enable": true, "mode": "push"}}
-        }
-    });
-</script>
 """, unsafe_allow_html=True)
 
 # =========================
-# LOGIQUE & SÉCURITÉ
+# LOGIQUE SÉCURITÉ
 # =========================
 PASSWORD = "théo123"
 DOWNLOAD_FOLDER = "downloads"
@@ -110,15 +70,15 @@ if "auth" not in st.session_state: st.session_state.auth = False
 if "history" not in st.session_state: st.session_state.history = []
 
 # =========================
-# LOGIN (ÉLÉGANT)
+# LOGIN
 # =========================
 if not st.session_state.auth:
     _, center, _ = st.columns([1, 1.5, 1])
     with center:
         st_lottie(lottie_rocket, height=200)
-        st.markdown("<h1 style='text-align:center; color:white;'>SYSTÈME SÉCURISÉ</h1>", unsafe_allow_html=True)
-        pwd = st.text_input("Clé d'accès", type="password", placeholder="Entrez le code...")
-        if st.button("DÉVERROUILLER LE PANEL"):
+        st.markdown("<h1 style='text-align:center; color:white;'>ACCÈS RESTREINT</h1>", unsafe_allow_html=True)
+        pwd = st.text_input("Clé d'accès", type="password")
+        if st.button("DÉVERROUILLER"):
             if pwd == PASSWORD:
                 st.session_state.auth = True
                 st.rerun()
@@ -126,97 +86,102 @@ if not st.session_state.auth:
     st.stop()
 
 # =========================
-# DASHBOARD PRINCIPAL
+# DASHBOARD MULTI-FONCTIONS
 # =========================
 st.markdown("<h1 class='main-title'>ULTRASTREAM X</h1>", unsafe_allow_html=True)
 
+# Barre latérale avec historique
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3502/3502688.png", width=80)
-    st.header("⚡ Settings")
-    theme = st.toggle("Activer mode Turbo", value=True)
-    st.divider()
-    
-    st.subheader("📜 Historique de session")
-    for item in st.session_state.history:
-        st.caption(f"✨ {item}")
+    st.image("https://cdn-icons-png.flaticon.com/512/3502/3502688.png", width=60)
+    st.header("💎 Session")
+    if st.session_state.history:
+        for item in st.session_state.history[-5:]:
+            st.caption(f"✅ {item}")
 
-# --- ZONE DE SAISIE ---
-container = st.container()
-with container:
-    col_u, col_o = st.columns() # 3 pour l'URL, 1 pour le format
+# CRÉATION DES ONGLETS (Tabs)
+tab1, tab2, tab3, tab4 = st.tabs(["🚀 Downloader", "🎨 Image Lab", "⏱️ Productivity", "📝 Notepad"])
+
+# --- ONGLET 1 : DOWNLOADER ---
+with tab1:
+    col_u, col_o = st.columns() # FIX: Ajout de la liste de ratios
     with col_u:
-        url = st.text_input("🔗 URL de la source", placeholder="Collez votre lien YouTube, Twitch, Facebook...")
+        url = st.text_input("🔗 URL de la source", placeholder="YouTube, Twitch, TikTok...")
     with col_o:
-        format_type = st.selectbox("Format", ["Vidéo (MP4)", "Audio (MP3)", "Full HD+ (MKV)"])
+        format_type = st.selectbox("Format", ["Vidéo (MP4)", "Audio (MP3)"])
 
-    expander = st.expander("🛠 Options Avancées")
-    with expander:
-        c1, c2, c3 = st.columns(3)
-        with c1: custom_name = st.text_input("Nom personnalisé")
-        with c2: quality = st.select_slider("Qualité Max", options=["360p", "720p", "1080p", "4K"])
-        with c3: st.checkbox("Ignorer Playlist", value=True)
-
-# --- ACTION ---
-if st.button("LANCER L'EXTRACTION 🚀"):
-    if not url:
-        st.warning("⚠️ L'URL est vide.")
-    else:
-        try:
-            with st.status("🛸 En orbite... Extraction en cours", expanded=True) as status:
-                # 1. Analyse
-                st_lottie(lottie_loading, height=100)
-                st.write("🔍 Analyse des serveurs...")
+    if st.button("LANCER L'EXTRACTION 🚀"):
+        if not url:
+            st.warning("URL vide.")
+        else:
+            try:
+                with st.status("🛸 Extraction...", expanded=True) as status:
+                    with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+                        info = ydl.extract_info(url, download=False)
+                    title = "".join([c for c in info.get('title', 'file') if c.isalnum() or c==' ']).strip()
+                    
+                    ydl_opts = {'outtmpl': f"{DOWNLOAD_FOLDER}/{title}.%(ext)s"}
+                    if "Audio" in format_type:
+                        ydl_opts.update({'format': 'bestaudio/best', 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3'}]})
+                    
+                    ydl.download([url])
+                    status.update(label="✅ Succès !", state="complete")
+                    
+                st.balloons()
+                ext = "mp3" if "Audio" in format_type else "mp4"
+                final_path = Path(DOWNLOAD_FOLDER) / f"{title}.{ext}"
                 
-                with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
-                    info = ydl.extract_info(url, download=False)
-                
-                title = custom_name if custom_name else info.get('title', 'file')
-                title = "".join([c for c in title if c.isalnum() or c in (' ', '_')]).strip()
-                
-                # 2. Config technique
-                ydl_opts = {
-                    'outtmpl': f"{DOWNLOAD_FOLDER}/{title}.%(ext)s",
-                    'noplaylist': True,
-                }
+                c1, c2 = st.columns() # FIX: Ajout de liste
+                with c1: st.image(info.get('thumbnail'), use_container_width=True)
+                with c2:
+                    with open(final_path, "rb") as f:
+                        st.download_button("📥 RÉCUPÉRER LE FICHIER", f, file_name=f"{title}.{ext}")
+                    st.session_state.history.append(title)
+            except Exception as e:
+                st.error(f"Erreur : {e}")
 
-                if "Audio" in format_type:
-                    ydl_opts.update({
-                        'format': 'bestaudio/best',
-                        'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3','preferredquality': '320'}]
-                    })
-                else:
-                    q_val = quality.replace('p', '')
-                    ydl_opts['format'] = f'bestvideo[height<={q_val}]+bestaudio/best'
-                    ydl_opts['merge_output_format'] = 'mp4' if "MP4" in format_type else 'mkv'
+# --- ONGLET 2 : IMAGE LAB (OFFLINE) ---
+with tab2:
+    st.subheader("🎨 Studio de Retouche (Fonctionne sans lien)")
+    img_file = st.file_uploader("Importer une photo", type=['png', 'jpg', 'jpeg'])
+    if img_file:
+        image = Image.open(img_file)
+        col_img1, col_img2 = st.columns()
+        
+        with col_img1:
+            st.image(image, caption="Original", use_container_width=True)
+            effect = st.selectbox("Effet Spécial", ["Aucun", "Noir & Blanc", "Flou Artistique", "Contraste Néon"])
+        
+        # Traitement Image
+        processed = image.copy()
+        if effect == "Noir & Blanc": processed = processed.convert("L")
+        elif effect == "Flou Artistique": processed = processed.filter(ImageFilter.BLUR)
+        elif effect == "Contraste Néon": processed = ImageEnhance.Contrast(processed).enhance(2.5)
+        
+        with col_img2:
+            st.image(processed, caption="Résultat", use_container_width=True)
 
-                # 3. Download
-                ydl.download([url])
-                status.update(label="✅ Terminé avec succès !", state="complete")
+# --- ONGLET 3 : PRODUCTIVITY (TIMER) ---
+with tab3:
+    st.subheader("⏱️ Mode Focus (Pomodoro)")
+    t_col1, t_col2 = st.columns()
+    with t_col1:
+        minutes = st.number_input("Durée du focus (min)", 1, 120, 25)
+        if st.button("DÉMARRER FOCUS"):
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            for percent_complete in range(100):
+                time.sleep((minutes * 60) / 100)
+                progress_bar.progress(percent_complete + 1)
+                status_text.text(f"Concentration... {percent_complete + 1}%")
+            st.success("Session terminée ! Prends une pause.")
+    with t_col2:
+        st.info("Utilise ce mode pour rester productif sans être distrait par les réseaux sociaux.")
 
-            # --- AFFICHAGE RÉSULTAT ---
-            st.balloons()
-            ext = "mp3" if "Audio" in format_type else ("mp4" if "MP4" in format_type else "mkv")
-            final_file = Path(DOWNLOAD_FOLDER) / f"{title}.{ext}"
+# --- ONGLET 4 : NOTEPAD ---
+with tab4:
+    st.subheader("📝 Quick Notes")
+    user_note = st.text_area("Prends tes notes ici (Listes de vidéos, idées, rappels...)", height=250)
+    if st.button("💾 Sauvegarder en texte"):
+        st.download_button("Télécharger ma note", user_note, file_name="notes_ultrastream.txt")
 
-            res_col1, res_col2 = st.columns()
-            with res_col1:
-                st.image(info.get('thumbnail'), caption=info.get('title'), use_container_width=True)
-            
-            with res_col2:
-                st.success(f"Prêt : {title}.{ext}")
-                with open(final_file, "rb") as f:
-                    st.download_button(
-                        f"📥 TÉLÉCHARGER LE FICHIER",
-                        data=f,
-                        file_name=f"{title}.{ext}",
-                        mime="application/octet-stream"
-                    )
-                if "Audio" in format_type:
-                    st.audio(final_file)
-                
-                st.session_state.history.append(title)
-
-        except Exception as e:
-            st.error(f"💥 Crash système : {e}")
-
-st.markdown("<br><br><p style='text-align:center; opacity:0.5;'>Version 2.0-PRO | © 2026 David Edwin</p>", unsafe_allow_html=True)
+st.markdown("<br><hr><p style='text-align:center; opacity:0.5;'>© 2026 DAVID EDWIN • UltraStream X Multi-Tool</p>", unsafe_allow_html=True)
