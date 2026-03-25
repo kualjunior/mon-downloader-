@@ -143,7 +143,7 @@ with st.sidebar:
 # --- ZONE DE SAISIE ---
 container = st.container()
 with container:
-    col_u, col_o = st.columns()
+    col_u, col_o = st.columns() # 3 pour l'URL, 1 pour le format
     with col_u:
         url = st.text_input("🔗 URL de la source", placeholder="Collez votre lien YouTube, Twitch, Facebook...")
     with col_o:
