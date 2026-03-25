@@ -71,7 +71,7 @@ if "auth" not in st.session_state:
 # SYSTÈME DE CONNEXION
 # =========================
 if not st.session_state.auth:
-    col1, col2, col3 = st.columns()
+    col1, col2, col3 = st.columns(3)
     with col2:
         st.markdown("<h1 style='text-align:center;'>🔐 ACCÈS OMNITOOLS</h1>", unsafe_allow_html=True)
         pwd = st.text_input("Clé d'accès", type="password")
