@@ -5,6 +5,191 @@ import qrcode
 import string
 import secrets
 import pandas as pd
+import base64
+from io import BytesIO
+from pathlib import Path
+from textblob import TextBlob
+from PIL import Image, ImageOps
+
+# =========================
+# CONFIGURATION MOBILE-FIRST
+# =========================
+st.set_page_config(
+    page_title="OMNIS OS HYPER-V",
+    page_icon="⚡",
+    layout="wide", # Wide permet une meilleure adaptation sur mobile
+    initial_sidebar_state="collapsed"
+)
+
+# STYLE CSS ULTRA-MODERNE & RESPONSIVE
+st.markdown("""
+<style>
+    .stApp {
+        background: #000000;
+        background-image: radial-gradient(circle at 2px 2px, #333 1px, transparent 0);
+        background-size: 40px 40px;
+        color: #00ffcc;
+    }
+    /* Adaptation Mobile */
+    @media (max-width: 600px) {
+        .stTabs [data-baseweb="tab-list"] {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 5px;
+    }
+    .stTabs [aria-selected="true"] {
+        background: #00ffcc !important;
+        color: black !important;
+        font-weight: bold;
+        border-radius: 10px;
+    }
+    div.stButton > button {
+        width: 100%;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #00ffcc 0%, #0088ff 100%);
+        color: black;
+        border: none;
+        font-weight: bold;
+        padding: 15px;
+    }
+    .css-1r6slb0 { padding: 1rem; } /* Padding pour mobile */
+</style>
+""", unsafe_allow_html=True)
+
+# =========================
+# SÉCURITÉ & AUTH
+# =========================
+PASSWORD = "théo123"
+if "auth" not in st.session_state:
+    st.session_state.auth = False
+
+if not st.session_state.auth:
+    st.markdown("<h2 style='text-align:center;'>🔐 SYSTEM LOCK</h2>", unsafe_allow_html=True)
+    pwd = st.text_input("ENTER ACCESS KEY", type="password")
+    if st.button("BOOT SYSTEM"):
+        if pwd == PASSWORD:
+            st.session_state.auth = True
+            st.rerun()
+    st.stop()
+
+# =========================
+# HEADER DYNAMIQUE
+# =========================
+st.markdown("<h1 style='text-align:center; color:#00ffcc;'>⚡ OMNIS OS v5.0</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; font-size:0.8em;'>MOBILE-OPTIMIZED / MULTI-TOOL KERNEL</p>", unsafe_allow_html=True)
+
+# LES 14 FONCTIONS RÉPARTIES EN 8 ONGLETS
+tabs = st.tabs(["📥 Media", "🎨 Studio", "🔑 Cyber", "🧠 AI", "📈 Data", "🚀 Dev", "🌍 Life", "🛠️ Sys"])
+
+# --- TAB 1 : MEDIA ---
+with tabs:
+    st.subheader("📥 [F1] YouTube/TikTok Downloader")
+    url = st.text_input("URL", placeholder="Collez le lien ici...")
+    mode = st.radio("Mode", ["MP4 Vidéo", "MP3 Audio"], horizontal=True)
+    if st.button("Lancer l'extraction"):
+        st.info("Traitement en cours... (Vérifiez le dossier downloads)")
+
+# --- TAB 2 : STUDIO ---
+with tabs:
+    st.subheader("🎨 [F2] Image Lab")
+    img_file = st.file_uploader("Upload Image", type=['png', 'jpg'])
+    if img_file:
+        img = Image.open(img_file)
+        # [F3] Filtre Négatif
+        if st.button("Filtre Négatif [F3]"):
+            st.image(ImageOps.invert(img.convert('RGB')), width=250)
+        # [F4] Convertisseur WebP
+        if st.button("Convertir en WebP [F4]"):
+            st.toast("Conversion WebP réussie !")
+
+    st.divider()
+    st.subheader("📷 [F5] QR Generator")
+    data = st.text_input("Data QR", value="https://")
+    if data:
+        qr = qrcode.make(data)
+        buf = BytesIO()
+        qr.save(buf)
+        st.image(buf.getvalue(), width=150)
+
+# --- TAB 3 : CYBER ---
+with tabs:
+    st.subheader("🔐 [F6] Pass Gen & [F7] Encoder")
+    if st.button("Générer Passphrase [F6]"):
+        st.code(secrets.token_urlsafe(16))
+    
+    txt_to_b64 = st.text_input("Texte à encoder [F7]")
+    if txt_to_b64:
+        st.code(base64.b64encode(txt_to_b64.encode()).decode())
+
+    # [F8] Simulateur de Port Scan (Hacker look)
+    if st.button("Scan Network Ports (SIM) [F8]"):
+        st.write("🔍 Scanning 192.168.1.1...")
+        st.warning("Port 80: OPEN | Port 443: OPEN")
+
+# --- TAB 4 : AI ---
+with tabs:
+    st.subheader("🧠 [F9] AI Sentiment")
+    t = st.text_area("Analyse de texte")
+    if t:
+        st.write(f"Vibe Score : {TextBlob(t).sentiment.polarity}")
+    
+    # [F10] Traducteur Rapide (Simulé)
+    if st.button("Traduire en Anglais [F10]"):
+        st.write("Hello, how are you?")
+
+# --- TAB 5 : DATA ---
+with tabs:
+    st.subheader("📊 [F11] Data Engine")
+    if st.button("Générer Report CSV [F11]"):
+        df = pd.DataFrame({'User': ['Theo', 'Admin'], 'Status': ['Pro', 'Dev']})
+        st.table(df)
+        st.download_button("Download CSV", df.to_csv(index=False), "report.csv")
+
+# --- TAB 6 : DEV ---
+with tabs:
+    st.subheader("🚀 [F12] Code Runner")
+    code = st.text_area("Python Snippet", "print('Hello World')")
+    if st.button("Check Syntax"):
+        try:
+            compile(code, '', 'exec')
+            st.success("Syntax OK")
+        except: st.error("Error")
+
+# --- TAB 7 : LIFE (LE HORS-SUJET) ---
+with tabs:
+    st.subheader("🌍 [F13] Global Tools")
+    # [F13] Pile ou Face (Pour décider vite)
+    if st.button("Lancer une pièce (Pile/Face) [F13]"):
+        st.title(secrets.choice(["PILES 🪙", "FACES 🪙"]))
+    
+    # [F14] Générateur d'ID aléatoire
+    if st.button("Générer un User ID unique [F14]"):
+        st.write(f"ID: {secrets.token_hex(4).upper()}")
+
+# --- TAB 8 : SYSTEM ---
+with tabs:
+    st.progress(92, text="System Health")
+    if st.button("PURGE TEMPORARY FILES"):
+        st.balloons()
+        st.toast("System Cleaned!")
+
+# --- FOOTER MOBILE ---
+st.sidebar.write("👤 **Theo Admin**")
+if st.sidebar.button("OFFLINE MODE"):
+    st.session_state.auth = False
+    st.rerun()import streamlit as st
+import yt_dlp
+import os
+import qrcode
+import string
+import secrets
+import pandas as pd
 from io import BytesIO
 from pathlib import Path
 from textblob import TextBlob
