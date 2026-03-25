@@ -1,119 +1,45 @@
-import streamlit as st 
-import yt_dlp 
-import os 
-import qrcode 
-import secrets 
-import pandas as pd 
-import base64 
-import time 
-from io import BytesIO 
-from PIL import Image, ImageOps 
-from textblob import TextBlob 
+import streamlit as st
 
-# ========================================== 
-# CONFIGURATION SYSTÈME
-# ========================================== 
-st.set_page_config(page_title="OMNIS OS v5.0", page_icon="⚡", layout="wide") 
+# 1. Configuration de la page
+st.set_page_config(page_title="OMNIS OS", layout="wide")
 
-st.markdown(""" 
-<style> 
-    .stApp { background: #0d1117; color: #e6edf3; } 
-    div.stButton > button { 
-        width: 100%; border-radius: 12 : ; height: 3.5em; 
-        background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%); 
-        color: white; border: none; font-weight: bold; 
-    } 
-    .stTabs [data-baseweb="tab-list"] { background-color: #161b22; border-radius: 10px; } 
-</style> 
-""", unsafe_allow_html=True) 
+# 2. Sécurité (Correction des colonnes)
+if "auth" not in st.session_state:
+    st.session_state.auth = False
 
-# ========================================== 
-# SÉCURITÉ D'ACCÈS 
-# ========================================== 
-PASSWORD = "théo123" 
-if "auth" not in st.session_state: 
-    st.session_state.auth = False 
+if not st.session_state.auth:
+    # On précise '3' pour créer 3 colonnes
+    col1, col2, col3 = st.columns(3)
+    with col2:
+        st.title("🔒 Login")
+        pwd = st.text_input("PASSWORD", type="password")
+        if st.button("BOOT UP"):
+            if pwd == "théo123":
+                st.session_state.auth = True
+                st.rerun()
+            else:
+                st.error("Accès refusé")
+    st.stop()
 
-if not st.session_state.auth: 
-    # Correction : st.columns(3) pour diviser l'écran en 3
-    l, col, r = st.columns(3) 
-    with col: 
-        st.markdown("<h2 style='text-align:center;'>🔒 KERNEL LOCKED</h2>", unsafe_allow_html=True) 
-        pwd = st.text_input("PASSWORD", type="password") 
-        if st.button("BOOT UP"): 
-            if pwd == PASSWORD: 
-                st.session_state.auth = True 
-                st.rerun() 
-            else: 
-                st.error("ACCESS DENIED") 
-    st.stop() 
+# 3. Dashboard (Correction des Onglets)
+st.title("⚡ OMNIS OS v5.0")
 
-# ========================================== 
-# DASHBOARD OMNIS 
-# ========================================== 
-st.markdown("<h1 style='text-align:center; color:#00d2ff;'>⚡ OMNIS OS v5.0</h1>", unsafe_allow_html=True) 
+# On crée la liste des onglets
+tabs = st.tabs(["📥 Media", "🎨 Studio", "⚙️ Sys"])
 
-# On crée les onglets (C'est une LISTE d'objets)
-tabs = st.tabs(["📥 Media", "🎨 Studio", "🔐 Safe", "🧠 AI", "📊 Data", "🚀 Dev", "🌍 Life", "⚙️ Sys"]) 
-
-# --- CORRECTION : ACCÈS PAR INDEX [0, 1, 2...] ---
-
+# ON UTILISE L'INDEX,, POUR CHAQUE ONGLET
 with tabs: 
-    st.subheader("📥 Media Extraction") 
-    url = st.text_input("Lien Vidéo", placeholder="https://...", key="yt_url_key") 
-    if st.button("Lancer l'extraction"): 
-        st.info("Recherche du flux... (Simulé)") 
+    st.subheader("Media Downloader")
+    st.text_input("Lien URL", key="url_media")
+    if st.button("Extraire"):
+        st.info("Traitement en cours...")
 
-with tabs: 
-    st.subheader("🎨 Image Lab") 
-    up = st.file_uploader("Charger une image", type=['jpg', 'png']) 
-    if up: 
-        img = Image.open(up) 
-        st.image(img, use_container_width=True) 
-        c1, c2 = st.columns(2) 
-        with c1: 
-            if st.button("Noir & Blanc"): st.image(img.convert('L')) 
-        with c2: 
-            if st.button("Effet Miroir"): st.image(ImageOps.mirror(img)) 
+with tabs:
+    st.subheader("Studio Photo")
+    st.file_uploader("Charger une image", type=['png', 'jpg'])
 
-with tabs: 
-    st.subheader("🔐 Security Master") 
-    if st.button("Générer Passphrase"): st.code(secrets.token_urlsafe(20)) 
-    secret_text = st.text_input("Texte à encoder", key="sec_text_key") 
-    if secret_text: st.code(base64.b64encode(secret_text.encode()).decode()) 
-
-with tabs: 
-    st.subheader("🧠 AI Engine") 
-    txt = st.text_area("Analyse de texte", key="ai_area_key") 
-    if txt: 
-        st.write(f"Vibe Score: {TextBlob(txt).sentiment.polarity}") 
-
-with tabs: 
-    st.subheader("📊 Data Visualizer") 
-    df = pd.DataFrame({ 
-        'ID': ['01', '02', '03'], 
-        'Value': ['99.9%', '85.2%', '91.0%'] 
-    }) 
-    st.dataframe(df, use_container_width=True) 
-
-with tabs: 
-    st.subheader("🚀 Syntax Checker") 
-    code_snippet = st.text_area("Code Python", "print('Hello')", key="code_area_key") 
-    if st.button("Vérifier"): 
-        try: 
-            compile(code_snippet, '', 'exec')
-            st.success("Syntaxe Valide") 
-        except Exception as e: 
-            st.error(f"Erreur : {e}") 
-
-with tabs: 
-    st.subheader("🌍 Life Tools") 
-    if st.button("🪙 Pile ou Face"): 
-        st.title(secrets.choice(["PILE", "FACE"])) 
-
-with tabs: 
-    st.subheader("⚙️ System Status") 
-    st.progress(98) 
-    if st.button("🔴 DÉCONNEXION"): 
-        st.session_state.auth = False 
+with tabs:
+    st.subheader("Système")
+    if st.button("DÉCONNEXION"):
+        st.session_state.auth = False
         st.rerun()
