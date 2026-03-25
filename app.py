@@ -15,6 +15,7 @@ from textblob import TextBlob
 # ========================================== 
 st.set_page_config(page_title="OMNIS OS v5.0", page_icon="⚡", layout="wide") 
 
+# DESIGN CSS
 st.markdown(""" 
 <style> 
     .stApp { background: #0d1117; color: #e6edf3; } 
@@ -35,7 +36,7 @@ if "auth" not in st.session_state:
     st.session_state.auth = False 
 
 if not st.session_state.auth: 
-    # FIX: Ajout de l'argument 3 pour définir les colonnes
+    # FIX: Ajout du chiffre 3 pour définir les colonnes
     l, col, r = st.columns(3) 
     with col: 
         st.markdown("<h2 style='text-align:center;'>🔒 KERNEL LOCKED</h2>", unsafe_allow_html=True) 
@@ -53,16 +54,16 @@ if not st.session_state.auth:
 # ========================================== 
 st.markdown("<h1 style='text-align:center; color:#00d2ff;'>⚡ OMNIS OS v5.0</h1>", unsafe_allow_html=True) 
 
-# Création de la liste d'onglets
+# On crée les onglets
 tabs = st.tabs(["📥 Media", "🎨 Studio", "🔐 Safe", "🧠 AI", "📊 Data", "🚀 Dev", "🌍 Life", "⚙️ Sys"]) 
 
-# --- FIX: Utilisation de l'indexation tabs[x] ---
+# --- FIX: REMPLACEMENT DE "with tabs:" PAR "with tabs[index]:" ---
 
 with tabs: 
     st.subheader("📥 Media Extraction") 
     url = st.text_input("Lien Vidéo", placeholder="https://...", key="yt_url") 
     if st.button("Lancer l'extraction"): 
-        st.info("Recherche du flux...") 
+        st.info("Recherche du flux... (Simulé)") 
 
 with tabs: 
     st.subheader("🎨 Image Lab") 
@@ -77,32 +78,39 @@ with tabs:
             if st.button("Effet Miroir"): st.image(ImageOps.mirror(img)) 
 
 with tabs: 
-    st.subheader("🔐 Security") 
+    st.subheader("🔐 Security Master") 
     if st.button("Générer Passphrase"): st.code(secrets.token_urlsafe(20)) 
-    sec_text = st.text_input("Texte à encoder", key="sec_input") 
-    if sec_text: st.code(base64.b64encode(sec_text.encode()).decode()) 
+    secret_text = st.text_input("Texte à encoder", key="sec_text") 
+    if secret_text: st.code(base64.b64encode(secret_text.encode()).decode()) 
 
 with tabs: 
     st.subheader("🧠 AI Engine") 
-    txt = st.text_area("Analyse", key="ai_area") 
+    txt = st.text_area("Analyse de texte", key="ai_area") 
     if txt: 
         st.write(f"Vibe Score: {TextBlob(txt).sentiment.polarity}") 
 
 with tabs: 
-    st.subheader("📊 Data") 
-    df = pd.DataFrame({'ID': ['01', '02'], 'Value': ['99%', '85%']}) 
-    st.table(df) 
+    st.subheader("📊 Data Visualizer") 
+    df = pd.DataFrame({ 
+        'ID': ['A1', 'B2', 'C3'], 
+        'Value': ['99.9%', '85.2%', '91.0%'] 
+    }) 
+    st.dataframe(df, use_container_width=True) 
 
 with tabs: 
-    st.subheader("🚀 Dev Lab") 
-    code_in = st.text_area("Python", "print('Hello')", key="code_in") 
+    st.subheader("🚀 Syntax Checker") 
+    code_snippet = st.text_area("Code Python", "print('Hello')", key="code_area") 
     if st.button("Vérifier"): 
-        try: compile(code_in, '', 'exec'); st.success("Valide") 
-        except Exception as e: st.error(str(e)) 
+        try: 
+            compile(code_snippet, '', 'exec')
+            st.success("Syntaxe Valide") 
+        except Exception as e: 
+            st.error(f"Erreur : {e}") 
 
 with tabs: 
-    st.subheader("🌍 Life") 
-    if st.button("🪙 Pile ou Face"): st.title(secrets.choice(["PILE", "FACE"])) 
+    st.subheader("🌍 Life Tools") 
+    if st.button("🪙 Pile ou Face"): 
+        st.title(secrets.choice(["PILE", "FACE"])) 
 
 with tabs: 
     st.subheader("⚙️ System Status") 
