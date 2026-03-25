@@ -2,3 +2,4 @@ streamlit
 yt-dlp
 streamlit-lottie
 requests
+streamlit-js-eval
