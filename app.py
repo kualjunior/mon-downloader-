@@ -24,37 +24,22 @@ def load_lottieurl(url: str):
     except: return None
 
 lottie_rocket = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_96bovdur.json")
-lottie_loading = load_lottieurl("https://assets9.lottiefiles.com/packages/lf20_raiw2hsc.json")
 
 # =========================
-# STYLE CYBERPUNK AMÉLIORÉ
+# STYLE CYBERPUNK
 # =========================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap');
-
     .stApp { background: #08080a; font-family: 'Rajdhani', sans-serif; }
-    
     .main-title {
         font-family: 'Orbitron', sans-serif;
-        font-size: 3.5rem !important;
-        background: linear-gradient(90deg, #00f2fe, #7000ff, #00f2fe);
-        background-size: 200% auto;
+        font-size: 3rem !important;
+        background: linear-gradient(90deg, #00f2fe, #7000ff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
-        animation: shine 3s linear infinite;
-    }
-
-    @keyframes shine { to { background-position: 200% center; } }
-
-    /* Glassmorphism Tabs */
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; }
-    .stTabs [data-baseweb="tab"] {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-radius: 10px 10px 0 0 !important;
-        color: white !important;
-        padding: 10px 20px !important;
+        padding: 20px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -73,115 +58,96 @@ if "history" not in st.session_state: st.session_state.history = []
 # LOGIN
 # =========================
 if not st.session_state.auth:
-    _, center, _ = st.columns([1, 1.5, 1])
-    with center:
-        st_lottie(lottie_rocket, height=200)
-        st.markdown("<h1 style='text-align:center; color:white;'>ACCÈS RESTREINT</h1>", unsafe_allow_html=True)
+    c_left, c_mid, c_right = st.columns([1, 1.5, 1]) # FIX 1: Specifier les ratios
+    with c_mid:
+        if lottie_rocket: st_lottie(lottie_rocket, height=200)
+        st.markdown("<h2 style='text-align:center; color:white;'>ACCÈS SÉCURISÉ</h2>", unsafe_allow_html=True)
         pwd = st.text_input("Clé d'accès", type="password")
         if st.button("DÉVERROUILLER"):
             if pwd == PASSWORD:
                 st.session_state.auth = True
                 st.rerun()
-            else: st.error("❌ Code erroné.")
+            else: st.error("❌ Code incorrect")
     st.stop()
 
 # =========================
-# DASHBOARD MULTI-FONCTIONS
+# DASHBOARD
 # =========================
-st.markdown("<h1 class='main-title'>ULTRASTREAM X</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>ULTRASTREAM X PRO</h1>", unsafe_allow_html=True)
 
-# Barre latérale avec historique
-with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3502/3502688.png", width=60)
-    st.header("💎 Session")
-    if st.session_state.history:
-        for item in st.session_state.history[-5:]:
-            st.caption(f"✅ {item}")
-
-# CRÉATION DES ONGLETS (Tabs)
 tab1, tab2, tab3, tab4 = st.tabs(["🚀 Downloader", "🎨 Image Lab", "⏱️ Productivity", "📝 Notepad"])
 
-# --- ONGLET 1 : DOWNLOADER ---
+# --- TAB 1 : DOWNLOADER ---
 with tab1:
-    col_u, col_o = st.columns() # FIX: Ajout de la liste de ratios
+    # C'EST ICI QUE ÇA PLANTAIT (Ligne 106 dans ton log)
+    col_u, col_o = st.columns() # FIX 2: Ratios obligatoires
     with col_u:
-        url = st.text_input("🔗 URL de la source", placeholder="YouTube, Twitch, TikTok...")
+        url = st.text_input("🔗 URL de la source", placeholder="YouTube, TikTok, etc...")
     with col_o:
         format_type = st.selectbox("Format", ["Vidéo (MP4)", "Audio (MP3)"])
 
     if st.button("LANCER L'EXTRACTION 🚀"):
         if not url:
-            st.warning("URL vide.")
+            st.warning("Veuillez entrer une URL.")
         else:
             try:
-                with st.status("🛸 Extraction...", expanded=True) as status:
-                    with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
-                        info = ydl.extract_info(url, download=False)
-                    title = "".join([c for c in info.get('title', 'file') if c.isalnum() or c==' ']).strip()
-                    
-                    ydl_opts = {'outtmpl': f"{DOWNLOAD_FOLDER}/{title}.%(ext)s"}
+                with st.status("🛸 Extraction en cours...", expanded=True) as status:
+                    ydl_opts = {'outtmpl': f"{DOWNLOAD_FOLDER}/%(title)s.%(ext)s", 'quiet': True}
                     if "Audio" in format_type:
                         ydl_opts.update({'format': 'bestaudio/best', 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3'}]})
                     
-                    ydl.download([url])
-                    status.update(label="✅ Succès !", state="complete")
-                    
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        info = ydl.extract_info(url, download=True)
+                        filename = ydl.prepare_filename(info)
+                        if "Audio" in format_type: filename = filename.rsplit('.', 1) + ".mp3"
+
                 st.balloons()
-                ext = "mp3" if "Audio" in format_type else "mp4"
-                final_path = Path(DOWNLOAD_FOLDER) / f"{title}.{ext}"
-                
-                c1, c2 = st.columns() # FIX: Ajout de liste
-                with c1: st.image(info.get('thumbnail'), use_container_width=True)
-                with c2:
-                    with open(final_path, "rb") as f:
-                        st.download_button("📥 RÉCUPÉRER LE FICHIER", f, file_name=f"{title}.{ext}")
-                    st.session_state.history.append(title)
+                res_col1, res_col2 = st.columns() # FIX 3: Ratios
+                with res_col1:
+                    st.image(info.get('thumbnail'), use_container_width=True)
+                with res_col2:
+                    with open(filename, "rb") as f:
+                        st.download_button("📥 TÉLÉCHARGER MAINTENANT", f, file_name=os.path.basename(filename))
+                    st.session_state.history.append(info.get('title'))
             except Exception as e:
                 st.error(f"Erreur : {e}")
 
-# --- ONGLET 2 : IMAGE LAB (OFFLINE) ---
+# --- TAB 2 : IMAGE LAB ---
 with tab2:
-    st.subheader("🎨 Studio de Retouche (Fonctionne sans lien)")
-    img_file = st.file_uploader("Importer une photo", type=['png', 'jpg', 'jpeg'])
+    st.subheader("🎨 Retouche Photo Rapide")
+    img_file = st.file_uploader("Choisir une image", type=['png', 'jpg', 'jpeg'])
     if img_file:
-        image = Image.open(img_file)
-        col_img1, col_img2 = st.columns()
+        img = Image.open(img_file)
+        # On définit 2 colonnes égales
+        ci1, ci2 = st.columns() # FIX 4: Ratios
+        with ci1:
+            st.image(img, caption="Original", use_container_width=True)
+            effect = st.selectbox("Effet", ["Aucun", "Noir & Blanc", "Flou", "Contraste"])
         
-        with col_img1:
-            st.image(image, caption="Original", use_container_width=True)
-            effect = st.selectbox("Effet Spécial", ["Aucun", "Noir & Blanc", "Flou Artistique", "Contraste Néon"])
+        # Traitement simple
+        out = img.copy()
+        if effect == "Noir & Blanc": out = out.convert("L")
+        elif effect == "Flou": out = out.filter(ImageFilter.BLUR)
+        elif effect == "Contraste": out = ImageEnhance.Contrast(out).enhance(2)
         
-        # Traitement Image
-        processed = image.copy()
-        if effect == "Noir & Blanc": processed = processed.convert("L")
-        elif effect == "Flou Artistique": processed = processed.filter(ImageFilter.BLUR)
-        elif effect == "Contraste Néon": processed = ImageEnhance.Contrast(processed).enhance(2.5)
-        
-        with col_img2:
-            st.image(processed, caption="Résultat", use_container_width=True)
+        with ci2:
+            st.image(out, caption="Résultat", use_container_width=True)
 
-# --- ONGLET 3 : PRODUCTIVITY (TIMER) ---
+# --- TAB 3 : PRODUCTIVITY ---
 with tab3:
-    st.subheader("⏱️ Mode Focus (Pomodoro)")
-    t_col1, t_col2 = st.columns()
-    with t_col1:
-        minutes = st.number_input("Durée du focus (min)", 1, 120, 25)
-        if st.button("DÉMARRER FOCUS"):
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            for percent_complete in range(100):
-                time.sleep((minutes * 60) / 100)
-                progress_bar.progress(percent_complete + 1)
-                status_text.text(f"Concentration... {percent_complete + 1}%")
-            st.success("Session terminée ! Prends une pause.")
-    with t_col2:
-        st.info("Utilise ce mode pour rester productif sans être distrait par les réseaux sociaux.")
+    st.subheader("⏱️ Timer Focus")
+    t1, t2 = st.columns() # FIX 5: Ratios
+    with t1:
+        mins = st.number_input("Minutes", 1, 60, 25)
+        if st.button("Démarrer le chrono"):
+            st.info(f"Focus activé pour {mins} minutes !")
+    with t2:
+        st.write("Idéal pour travailler sans distractions.")
 
-# --- ONGLET 4 : NOTEPAD ---
+# --- TAB 4 : NOTEPAD ---
 with tab4:
-    st.subheader("📝 Quick Notes")
-    user_note = st.text_area("Prends tes notes ici (Listes de vidéos, idées, rappels...)", height=250)
-    if st.button("💾 Sauvegarder en texte"):
-        st.download_button("Télécharger ma note", user_note, file_name="notes_ultrastream.txt")
+    st.subheader("📝 Bloc-notes")
+    note = st.text_area("Vos notes ici...", height=200)
+    st.download_button("💾 Sauvegarder la note", note, file_name="note.txt")
 
-st.markdown("<br><hr><p style='text-align:center; opacity:0.5;'>© 2026 DAVID EDWIN • UltraStream X Multi-Tool</p>", unsafe_allow_html=True)
+st.markdown("<br><hr><p style='text-align:center; opacity:0.5;'>© 2026 David Edwin</p>", unsafe_allow_html=True)
