@@ -35,7 +35,7 @@ if "auth" not in st.session_state:
     st.session_state.auth = False 
 
 if not st.session_state.auth: 
-    # Correction : st.columns(3) pour diviser l'écran en 3
+    # FIX: Ajout du chiffre 3 pour st.columns
     l, col, r = st.columns(3) 
     with col: 
         st.markdown("<h2 style='text-align:center;'>🔒 KERNEL LOCKED</h2>", unsafe_allow_html=True) 
@@ -53,20 +53,20 @@ if not st.session_state.auth:
 # ========================================== 
 st.markdown("<h1 style='text-align:center; color:#00d2ff;'>⚡ OMNIS OS v5.0</h1>", unsafe_allow_html=True) 
 
-# Initialisation de la LISTE des onglets
+# On définit la liste des onglets
 tabs = st.tabs(["📥 Media", "🎨 Studio", "🔐 Safe", "🧠 AI", "📊 Data", "🚀 Dev", "🌍 Life", "⚙️ Sys"]) 
 
-# --- CORRECTION : ACCÈS PAR INDEX [0, 1, 2...] ---
+# --- CORRECTION : UTILISATION DE tabs[index] ---
 
-with tabs: 
+with tabs: # Premier onglet (Media)
     st.subheader("📥 Media Extraction") 
     url = st.text_input("Lien Vidéo", placeholder="https://...", key="yt_url") 
     if st.button("Lancer l'extraction"): 
         st.info("Recherche du flux... (Simulé)") 
 
-with tabs: 
+with tabs: # Deuxième onglet (Studio)
     st.subheader("🎨 Image Lab") 
-    up = st.file_uploader("Image", type=['jpg', 'png']) 
+    up = st.file_uploader("Charger une image", type=['jpg', 'png']) 
     if up: 
         img = Image.open(up) 
         st.image(img, use_container_width=True) 
@@ -76,37 +76,44 @@ with tabs:
         with c2: 
             if st.button("Effet Miroir"): st.image(ImageOps.mirror(img)) 
 
-with tabs: 
-    st.subheader("🔐 Security") 
+with tabs: # Troisième onglet (Safe)
+    st.subheader("🔐 Security Master") 
     if st.button("Générer Passphrase"): st.code(secrets.token_urlsafe(20)) 
-    sec_text = st.text_input("Texte à encoder", key="sec_text") 
-    if sec_text: st.code(base64.b64encode(sec_text.encode()).decode()) 
+    secret_text = st.text_input("Texte à encoder", key="sec_text") 
+    if secret_text: st.code(base64.b64encode(secret_text.encode()).decode()) 
 
-with tabs: 
+with tabs: # Quatrième onglet (AI)
     st.subheader("🧠 AI Engine") 
-    txt = st.text_area("Analyse", key="ai_area") 
+    txt = st.text_area("Analyse de texte", key="ai_area") 
     if txt: 
         st.write(f"Vibe Score: {TextBlob(txt).sentiment.polarity}") 
 
-with tabs: 
-    st.subheader("📊 Data") 
-    df = pd.DataFrame({'ID': ['01', '02'], 'Value': ['99%', '85%']}) 
-    st.table(df) 
+with tabs: # Cinquième onglet (Data)
+    st.subheader("📊 Data Visualizer") 
+    df = pd.DataFrame({ 
+        'ID': ['A1', 'B2', 'C3'], 
+        'Value': ['99.9%', '85.2%', '91.0%'] 
+    }) 
+    st.dataframe(df, use_container_width=True) 
 
-with tabs: 
-    st.subheader("🚀 Dev") 
-    code_in = st.text_area("Python", "print('Hello')", key="code_in") 
+with tabs: # Sixième onglet (Dev)
+    st.subheader("🚀 Syntax Checker") 
+    code_snippet = st.text_area("Code Python", "print('Hello')", key="code_area") 
     if st.button("Vérifier"): 
-        try: compile(code_in, '', 'exec'); st.success("Valide") 
-        except Exception as e: st.error(str(e)) 
+        try: 
+            compile(code_snippet, '', 'exec')
+            st.success("Syntaxe Valide") 
+        except Exception as e: 
+            st.error(f"Erreur : {e}") 
 
-with tabs: 
-    st.subheader("🌍 Life") 
-    if st.button("🪙 Pile ou Face"): st.title(secrets.choice(["PILE", "FACE"])) 
+with tabs: # Septième onglet (Life)
+    st.subheader("🌍 Life Tools") 
+    if st.button("🪙 Pile ou Face"): 
+        st.title(secrets.choice(["PILE", "FACE"])) 
 
-with tabs: 
-    st.subheader("⚙️ Sys") 
+with tabs: # Huitième onglet (Sys)
+    st.subheader("⚙️ System Status") 
     st.progress(98) 
-    if st.button("🔴 LOGOUT"): 
+    if st.button("🔴 DÉCONNEXION"): 
         st.session_state.auth = False 
         st.rerun()
