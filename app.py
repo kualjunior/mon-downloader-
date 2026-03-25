@@ -10,11 +10,10 @@ from io import BytesIO
 from PIL import Image, ImageOps 
 from textblob import TextBlob 
 
-# ========================================== 
-# CONFIGURATION SYSTÈME
-# ========================================== 
+# --- CONFIG ---
 st.set_page_config(page_title="OMNIS OS v5.0", page_icon="⚡", layout="wide") 
 
+# --- STYLE ---
 st.markdown(""" 
 <style> 
     .stApp { background: #0d1117; color: #e6edf3; } 
@@ -27,16 +26,14 @@ st.markdown("""
 </style> 
 """, unsafe_allow_html=True) 
 
-# ========================================== 
-# SÉCURITÉ D'ACCÈS 
-# ========================================== 
+# --- AUTH ---
 PASSWORD = "théo123" 
 if "auth" not in st.session_state: 
     st.session_state.auth = False 
 
 if not st.session_state.auth: 
     # FIX: Ajout de l'argument 3 pour correspondre aux 3 variables
-    left, col, right = st.columns(3) 
+    l, col, r = st.columns(3) 
     with col: 
         st.markdown("<h2 style='text-align:center;'>🔒 KERNEL LOCKED</h2>", unsafe_allow_html=True) 
         pwd = st.text_input("PASSWORD", type="password") 
@@ -48,22 +45,22 @@ if not st.session_state.auth:
                 st.error("ACCESS DENIED") 
     st.stop() 
 
-# ========================================== 
-# DASHBOARD
-# ========================================== 
+# --- DASHBOARD ---
 st.markdown("<h1 style='text-align:center; color:#00d2ff;'>⚡ OMNIS OS v5.0</h1>", unsafe_allow_html=True) 
 
+# Création de la liste d'onglets
 tabs = st.tabs(["📥 Media", "🎨 Studio", "🔐 Safe", "🧠 AI", "📊 Data", "🚀 Dev", "🌍 Life", "⚙️ Sys"]) 
 
+# FIX: Utilisation systématique de tabs[index] au lieu de "with tabs"
 with tabs: 
     st.subheader("📥 Media Extraction") 
-    url = st.text_input("Lien Vidéo", placeholder="https://...") 
+    url = st.text_input("Lien Vidéo", placeholder="https://...", key="url_input") 
     if st.button("Lancer l'extraction"): 
         st.info("Recherche du flux...") 
 
 with tabs: 
     st.subheader("🎨 Image Lab") 
-    up = st.file_uploader("Charger une image", type=['jpg', 'png']) 
+    up = st.file_uploader("Image", type=['jpg', 'png']) 
     if up: 
         img = Image.open(up) 
         st.image(img, use_container_width=True) 
@@ -76,42 +73,34 @@ with tabs:
 with tabs: 
     st.subheader("🔐 Security") 
     if st.button("Générer Passphrase"): st.code(secrets.token_urlsafe(20)) 
-    secret = st.text_input("Texte à encoder", key="sec_input") 
-    if secret: st.code(base64.b64encode(secret.encode()).decode()) 
+    sec = st.text_input("Texte à encoder", key="sec_text") 
+    if sec: st.code(base64.b64encode(sec.encode()).decode()) 
 
 with tabs: 
-    st.subheader("🧠 AI Analysis") 
-    txt = st.text_area("Analyse de sentiment", key="ai_area") 
-    if txt: 
-        st.write(f"Vibe Score: {TextBlob(txt).sentiment.polarity}") 
+    st.subheader("🧠 AI Engine") 
+    txt = st.text_area("Analyse", key="ai_text") 
+    if txt: st.write(f"Vibe Score: {TextBlob(txt).sentiment.polarity}") 
 
 with tabs: 
-    st.subheader("📊 Data Visualizer") 
-    # FIX: Correction de la virgule traînante
-    df = pd.DataFrame({ 
-        'ID': ['01', '02', '03'], 
-        'Value': ['99.9%', '85.2%', '91.0%'] 
-    }) 
-    st.dataframe(df, use_container_width=True) 
+    st.subheader("📊 Data") 
+    # FIX: Correction de la virgule et des données
+    df = pd.DataFrame({'ID': ['01', '02'], 'Value': ['99%', '85%']}) 
+    st.table(df) 
 
 with tabs: 
-    st.subheader("🚀 Dev Lab") 
-    code_snippet = st.text_area("Snippet Python", "print('Hello')", key="code_area") 
-    if st.button("Vérifier la syntaxe"): 
-        try: 
-            compile(code_snippet, '', 'exec')
-            st.success("Code Valide") 
-        except Exception as e: 
-            st.error(f"Erreur: {e}") 
+    st.subheader("🚀 Dev") 
+    code_in = st.text_area("Python", "print('Hi')", key="code_in") 
+    if st.button("Vérifier"): 
+        try: compile(code_in, '', 'exec'); st.success("Valide") 
+        except Exception as e: st.error(str(e)) 
 
 with tabs: 
-    st.subheader("🌍 Life Tools") 
-    if st.button("🪙 Lancer une pièce"): 
-        st.title(secrets.choice(["PILE", "FACE"])) 
+    st.subheader("🌍 Life") 
+    if st.button("🪙 Pile ou Face"): st.title(secrets.choice(["PILE", "FACE"])) 
 
 with tabs: 
-    st.subheader("⚙️ System Status") 
+    st.subheader("⚙️ System") 
     st.progress(98) 
-    if st.button("🔴 SHUTDOWN"): 
+    if st.button("LOGOUT"): 
         st.session_state.auth = False 
         st.rerun()
