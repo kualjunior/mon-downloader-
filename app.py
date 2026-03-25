@@ -66,7 +66,7 @@ if "auth" not in st.session_state:
     st.session_state.auth = False
 
 if not st.session_state.auth:
-    _, col, _ = st.columns()
+   _, col, _ = st.columns(3)
     with col:
         st.markdown("<h2 style='text-align:center;'>🔒 KERNEL LOCKED</h2>", unsafe_allow_html=True)
         pwd = st.text_input("PASSWORD", type="password")
