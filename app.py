@@ -8,10 +8,10 @@ from streamlit_lottie import st_lottie
 from PIL import Image, ImageFilter, ImageEnhance
 
 # =========================
-# CONFIGURATION PRO
+# CONFIGURATION ET THÈME
 # =========================
 st.set_page_config(
-    page_title="UltraStream X - Ultimate OS",
+    page_title="UltraStream X - Master OS",
     page_icon="🌌",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -25,9 +25,6 @@ def load_lottieurl(url: str):
 
 lottie_rocket = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_96bovdur.json")
 
-# =========================
-# STYLE CYBERPUNK
-# =========================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap');
@@ -38,14 +35,19 @@ st.markdown("""
         background: linear-gradient(90deg, #00f2fe, #7000ff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        text-align: center;
-        padding: 20px;
+        text-align: center; padding: 20px;
+    }
+    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
+    .stTabs [data-baseweb="tab"] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-radius: 8px 8px 0 0 !important;
+        padding: 10px 20px !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # =========================
-# LOGIQUE SÉCURITÉ
+# SÉCURITÉ ET DOSSIERS
 # =========================
 PASSWORD = "théo123"
 DOWNLOAD_FOLDER = "downloads"
@@ -55,15 +57,15 @@ if "auth" not in st.session_state: st.session_state.auth = False
 if "history" not in st.session_state: st.session_state.history = []
 
 # =========================
-# LOGIN
+# ÉCRAN DE CONNEXION
 # =========================
 if not st.session_state.auth:
-    c_left, c_mid, c_right = st.columns([1, 1.5, 1]) # FIX 1: Specifier les ratios
-    with c_mid:
+    col_l, col_m, col_r = st.columns([1, 1.5, 1]) # Correction : Ratios définis
+    with col_m:
         if lottie_rocket: st_lottie(lottie_rocket, height=200)
         st.markdown("<h2 style='text-align:center; color:white;'>ACCÈS SÉCURISÉ</h2>", unsafe_allow_html=True)
-        pwd = st.text_input("Clé d'accès", type="password")
-        if st.button("DÉVERROUILLER"):
+        pwd = st.text_input("Clé d'accès", type="password", key="login_pwd")
+        if st.button("DÉVERROUILLER LE SYSTÈME", key="login_btn"):
             if pwd == PASSWORD:
                 st.session_state.auth = True
                 st.rerun()
@@ -71,83 +73,93 @@ if not st.session_state.auth:
     st.stop()
 
 # =========================
-# DASHBOARD
+# DASHBOARD MULTIMÉDIA
 # =========================
 st.markdown("<h1 class='main-title'>ULTRASTREAM X PRO</h1>", unsafe_allow_html=True)
 
-tab1, tab2, tab3, tab4 = st.tabs(["🚀 Downloader", "🎨 Image Lab", "⏱️ Productivity", "📝 Notepad"])
+# Barre latérale
+with st.sidebar:
+    st.markdown("### 📊 État du Système")
+    st.success("Serveurs : Online")
+    st.divider()
+    if st.session_state.history:
+        st.markdown("### 📜 Récents")
+        for h in st.session_state.history[-5:]:
+            st.caption(f"• {h}")
 
-# --- TAB 1 : DOWNLOADER ---
+# Onglets
+tab1, tab2, tab3, tab4 = st.tabs(["🚀 Downloader", "🎨 Image Lab", "⏱️ Focus Timer", "📝 Notepad"])
+
+# --- ONGLET 1 : DOWNLOADER ---
 with tab1:
-    # C'EST ICI QUE ÇA PLANTAIT (Ligne 106 dans ton log)
-    col_u, col_o = st.columns() # FIX 2: Ratios obligatoires
-    with col_u:
-        url = st.text_input("🔗 URL de la source", placeholder="YouTube, TikTok, etc...")
-    with col_o:
-        format_type = st.selectbox("Format", ["Vidéo (MP4)", "Audio (MP3)"])
+    col_input1, col_input2 = st.columns() # Correction : Ratios définis
+    with col_input1:
+        url = st.text_input("🔗 URL de la source", placeholder="Lien vidéo ici...", key="main_url")
+    with col_input2:
+        ftype = st.selectbox("Format", ["Vidéo (MP4)", "Audio (MP3)"], key="main_fmt")
 
-    if st.button("LANCER L'EXTRACTION 🚀"):
+    if st.button("LANCER L'EXTRACTION 🚀", key="exec_btn"):
         if not url:
-            st.warning("Veuillez entrer une URL.")
+            st.warning("⚠️ L'URL est manquante.")
         else:
             try:
-                with st.status("🛸 Extraction en cours...", expanded=True) as status:
+                with st.status("🛸 Traitement...", expanded=True) as status:
                     ydl_opts = {'outtmpl': f"{DOWNLOAD_FOLDER}/%(title)s.%(ext)s", 'quiet': True}
-                    if "Audio" in format_type:
+                    if "Audio" in ftype:
                         ydl_opts.update({'format': 'bestaudio/best', 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3'}]})
                     
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=True)
-                        filename = ydl.prepare_filename(info)
-                        if "Audio" in format_type: filename = filename.rsplit('.', 1) + ".mp3"
+                        f_name = ydl.prepare_filename(info)
+                        if "Audio" in ftype: f_name = f_name.rsplit('.', 1) + ".mp3"
 
                 st.balloons()
-                res_col1, res_col2 = st.columns() # FIX 3: Ratios
-                with res_col1:
+                c_res1, c_res2 = st.columns() # Correction : Ratios définis
+                with c_res1:
                     st.image(info.get('thumbnail'), use_container_width=True)
-                with res_col2:
-                    with open(filename, "rb") as f:
-                        st.download_button("📥 TÉLÉCHARGER MAINTENANT", f, file_name=os.path.basename(filename))
+                with c_res2:
+                    st.success("Fichier prêt !")
+                    with open(f_name, "rb") as f:
+                        st.download_button("📥 TÉLÉCHARGER", f, file_name=os.path.basename(f_name), key="dl_btn")
                     st.session_state.history.append(info.get('title'))
             except Exception as e:
                 st.error(f"Erreur : {e}")
 
-# --- TAB 2 : IMAGE LAB ---
+# --- ONGLET 2 : IMAGE LAB (OFFLINE) ---
 with tab2:
-    st.subheader("🎨 Retouche Photo Rapide")
-    img_file = st.file_uploader("Choisir une image", type=['png', 'jpg', 'jpeg'])
-    if img_file:
-        img = Image.open(img_file)
-        # On définit 2 colonnes égales
-        ci1, ci2 = st.columns() # FIX 4: Ratios
+    st.subheader("🎨 Studio Photo")
+    up_img = st.file_uploader("Charge une image", type=['png', 'jpg', 'jpeg'], key="img_up")
+    if up_img:
+        img = Image.open(up_img)
+        ci1, ci2 = st.columns() # Correction : Ratios définis
         with ci1:
             st.image(img, caption="Original", use_container_width=True)
-            effect = st.selectbox("Effet", ["Aucun", "Noir & Blanc", "Flou", "Contraste"])
+            effect = st.radio("Appliquer un filtre", ["Aucun", "Noir & Blanc", "Flou", "Néon"], key="filter_choice")
         
-        # Traitement simple
+        # Logique de traitement
         out = img.copy()
         if effect == "Noir & Blanc": out = out.convert("L")
         elif effect == "Flou": out = out.filter(ImageFilter.BLUR)
-        elif effect == "Contraste": out = ImageEnhance.Contrast(out).enhance(2)
+        elif effect == "Néon": out = ImageEnhance.Contrast(out).enhance(3)
         
         with ci2:
             st.image(out, caption="Résultat", use_container_width=True)
 
-# --- TAB 3 : PRODUCTIVITY ---
+# --- ONGLET 3 : TIMER ---
 with tab3:
-    st.subheader("⏱️ Timer Focus")
-    t1, t2 = st.columns() # FIX 5: Ratios
-    with t1:
-        mins = st.number_input("Minutes", 1, 60, 25)
-        if st.button("Démarrer le chrono"):
-            st.info(f"Focus activé pour {mins} minutes !")
-    with t2:
-        st.write("Idéal pour travailler sans distractions.")
+    st.subheader("⏱️ Chrono de Productivité")
+    ct1, ct2 = st.columns() # Correction : Ratios définis
+    with ct1:
+        m = st.number_input("Minutes de focus", 1, 60, 25, key="timer_input")
+        if st.button("DÉMARRER", key="timer_btn"):
+            st.info(f"C'est parti pour {m} minutes !")
+    with ct2:
+        st.write("Le secret des pros : travaillez par blocs de 25 minutes.")
 
-# --- TAB 4 : NOTEPAD ---
+# --- ONGLET 4 : NOTEPAD ---
 with tab4:
-    st.subheader("📝 Bloc-notes")
-    note = st.text_area("Vos notes ici...", height=200)
-    st.download_button("💾 Sauvegarder la note", note, file_name="note.txt")
+    st.subheader("📝 Quick Notes")
+    text = st.text_area("Notez vos idées ici...", height=200, key="note_area")
+    st.download_button("💾 EXPORTER (.txt)", text, file_name="notes_ultrastream.txt", key="export_btn")
 
-st.markdown("<br><hr><p style='text-align:center; opacity:0.5;'>© 2026 David Edwin</p>", unsafe_allow_html=True)
+st.markdown("<br><hr><p style='text-align:center; opacity:0.4;'>UltraStream X v3.5 | © 2026 David Edwin</p>", unsafe_allow_html=True)
