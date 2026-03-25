@@ -2,79 +2,105 @@ import streamlit as st
 import yt_dlp
 import os
 import time
-from pathlib import Path
-import streamlit_lottie as st_lottie
 import requests
+from pathlib import Path
+from streamlit_lottie import st_lottie
+from streamlit_js_eval import streamlit_js_eval
 
 # =========================
-# CONFIG & ASSETS
+# CONFIGURATION PRO
 # =========================
 st.set_page_config(
-    page_title="UltraStream X - Pro Max",
-    page_icon="⚡",
+    page_title="UltraStream X - PRO MAX",
+    page_icon="💎",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
+# Fonction pour charger les animations Lottie
 def load_lottieurl(url: str):
     r = requests.get(url)
-    if r.status_code != 200: return None
-    return r.json()
+    return r.json() if r.status_code == 200 else None
 
-lottie_download = load_lottieurl("https://assets1.lottiefiles.com/packages/lf20_ai9m8way.json") # Radar
-lottie_success = load_lottieurl("https://assets5.lottiefiles.com/packages/lf20_7W9rAL.json") # Check
+lottie_rocket = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_96bovdur.json")
+lottie_loading = load_lottieurl("https://assets9.lottiefiles.com/packages/lf20_raiw2hsc.json")
 
 # =========================
-# STYLE "NEON DARK"
+# STYLE & JAVASCRIPT (PARTICULES)
 # =========================
 st.markdown("""
 <style>
-    /* Global Background */
+    /* Import Google Font */
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+
     .stApp {
-        background: radial-gradient(circle at top right, #1e293b, #0f172a);
-        color: #f8fafc;
-    }
-    
-    /* Glassmorphism Cards */
-    div[data-testid="stVerticalBlock"] > div:has(div.stButton) {
-        background: rgba(255, 255, 255, 0.03);
-        padding: 2rem;
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
+        background: #050505;
+        font-family: 'Inter', sans-serif;
     }
 
-    /* Custom Titles */
+    /* Titre Cyberpunk */
     .main-title {
-        font-size: 3rem;
-        font-weight: 800;
-        background: -webkit-linear-gradient(#00f2fe, #4facfe);
+        font-family: 'Orbitron', sans-serif;
+        font-size: 3.5rem !important;
+        font-weight: 700;
+        background: linear-gradient(90deg, #00f2fe, #4facfe, #7000ff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
-        margin-bottom: 0;
+        letter-spacing: 3px;
+        margin-top: -50px;
     }
 
-    /* Buttons */
+    /* Cartes Glassmorphism */
+    div.stSelectbox, div.stTextInput, div.stNumberInput {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        border: 1px solid rgba(0, 242, 254, 0.2);
+        padding: 5px;
+    }
+
+    /* Bouton Rayonnant */
     .stButton > button {
-        background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%) !important;
-        border: none !important;
+        width: 100%;
+        background: linear-gradient(45deg, #00f2fe, #7000ff) !important;
         color: white !important;
-        font-weight: bold !important;
-        transition: 0.3s all ease;
-        border-radius: 10px !important;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        border: none !important;
+        border-radius: 15px !important;
+        font-family: 'Orbitron', sans-serif;
+        padding: 1rem !important;
+        font-size: 1.2rem !important;
+        transition: 0.4s;
+        box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
     }
     .stButton > button:hover {
-        box-shadow: 0 0 20px rgba(79, 172, 254, 0.6);
-        transform: translateY(-2px);
+        transform: scale(1.03);
+        box-shadow: 0 0 30px rgba(112, 0, 255, 0.6);
     }
 </style>
+
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<div id="particles-js" style="position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1;"></div>
+<script>
+    particlesJS("particles-js", {
+        "particles": {
+            "number": {"value": 80, "density": {"enable": true, "value_area": 800}},
+            "color": {"value": "#00f2fe"},
+            "shape": {"type": "circle"},
+            "opacity": {"value": 0.5, "random": false},
+            "size": {"value": 3, "random": true},
+            "line_linked": {"enable": true, "distance": 150, "color": "#7000ff", "opacity": 0.4, "width": 1},
+            "move": {"enable": true, "speed": 2, "direction": "none", "random": false, "straight": false, "out_mode": "out"}
+        },
+        "interactivity": {
+            "detect_on": "canvas",
+            "events": {"onhover": {"enable": true, "mode": "repulse"}, "onclick": {"enable": true, "mode": "push"}}
+        }
+    });
+</script>
 """, unsafe_allow_html=True)
 
 # =========================
-# LOGIC & FOLDERS
+# LOGIQUE & SÉCURITÉ
 # =========================
 PASSWORD = "théo123"
 DOWNLOAD_FOLDER = "downloads"
@@ -84,124 +110,113 @@ if "auth" not in st.session_state: st.session_state.auth = False
 if "history" not in st.session_state: st.session_state.history = []
 
 # =========================
-# LOGIN SCREEN
+# LOGIN (ÉLÉGANT)
 # =========================
 if not st.session_state.auth:
-    cols = st.columns()
-    with cols:
-        st.markdown("<h1 class='main-title'>ACCESS GRANTED</h1>", unsafe_allow_html=True)
-        pwd = st.text_input("🔑 Entrez votre clé d'accès", type="password")
-        if st.button("DÉVERROUILLER"):
+    _, center, _ = st.columns([1, 1.5, 1])
+    with center:
+        st_lottie(lottie_rocket, height=200)
+        st.markdown("<h1 style='text-align:center; color:white;'>SYSTÈME SÉCURISÉ</h1>", unsafe_allow_html=True)
+        pwd = st.text_input("Clé d'accès", type="password", placeholder="Entrez le code...")
+        if st.button("DÉVERROUILLER LE PANEL"):
             if pwd == PASSWORD:
                 st.session_state.auth = True
                 st.rerun()
-            else: st.error("Accès refusé.")
+            else: st.error("❌ Code erroné.")
     st.stop()
 
 # =========================
-# MAIN INTERFACE
+# DASHBOARD PRINCIPAL
 # =========================
-st.markdown("<h1 class='main-title'>⚡ UltraStream X</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; opacity:0.7;'>Vitesse maximale • Qualité Premium • Sans publicité</p>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>ULTRASTREAM X</h1>", unsafe_allow_html=True)
 
-# Sidebar Design
 with st.sidebar:
-    st.header("💎 Premium Hub")
-    if st.session_state.history:
-        st.subheader("Récents")
-        for h in st.session_state.history[-5:]:
-            st.caption(f"✅ {h}")
-        if st.button("Vider le cache"):
-            st.session_state.history = []
-    
+    st.image("https://cdn-icons-png.flaticon.com/512/3502/3502688.png", width=80)
+    st.header("⚡ Settings")
+    theme = st.toggle("Activer mode Turbo", value=True)
     st.divider()
-    st.info("💡 Astuce : Le format MP3 extrait la meilleure piste audio disponible.")
+    
+    st.subheader("📜 Historique de session")
+    for item in st.session_state.history:
+        st.caption(f"✨ {item}")
 
-# Layout Principal
-c1, c2 = st.columns()
+# --- ZONE DE SAISIE ---
+container = st.container()
+with container:
+    col_u, col_o = st.columns()
+    with col_u:
+        url = st.text_input("🔗 URL de la source", placeholder="Collez votre lien YouTube, Twitch, Facebook...")
+    with col_o:
+        format_type = st.selectbox("Format", ["Vidéo (MP4)", "Audio (MP3)", "Full HD+ (MKV)"])
 
-with c1:
-    url = st.text_input("🔗 Lien de la vidéo (YouTube, Twitch, etc.)", placeholder="https://...")
-    name = st.text_input("✏️ Nommer le fichier (laisser vide pour l'original)")
+    expander = st.expander("🛠 Options Avancées")
+    with expander:
+        c1, c2, c3 = st.columns(3)
+        with c1: custom_name = st.text_input("Nom personnalisé")
+        with c2: quality = st.select_slider("Qualité Max", options=["360p", "720p", "1080p", "4K"])
+        with c3: st.checkbox("Ignorer Playlist", value=True)
 
-with c2:
-    mode = st.selectbox("📺 Format", ["Vidéo (MP4)", "Audio (MP3)"])
-    if "Vidéo" in mode:
-        res = st.select_slider("Résolution", options=["360p", "480p", "720p", "1080p", "Best"])
-    else:
-        res = st.selectbox("Bitrate", ["128kbps", "192kbps", "320kbps"])
-
-# Bouton de lancement
-if st.button("🚀 ANALYSER ET GÉNÉRER"):
+# --- ACTION ---
+if st.button("LANCER L'EXTRACTION 🚀"):
     if not url:
-        st.warning("Veuillez entrer une URL.")
+        st.warning("⚠️ L'URL est vide.")
     else:
         try:
-            with st.status("🛠 Traitement en cours...", expanded=True) as status_box:
+            with st.status("🛸 En orbite... Extraction en cours", expanded=True) as status:
                 # 1. Analyse
-                st.write("Analyse des métadonnées...")
+                st_lottie(lottie_loading, height=100)
+                st.write("🔍 Analyse des serveurs...")
+                
                 with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
                     info = ydl.extract_info(url, download=False)
                 
-                # Affichage des infos
-                st.image(info.get('thumbnail'), width=300)
-                st.write(f"**Titre :** {info.get('title')}")
+                title = custom_name if custom_name else info.get('title', 'file')
+                title = "".join([c for c in title if c.isalnum() or c in (' ', '_')]).strip()
                 
-                # 2. Configuration du téléchargement
-                filename = name if name else info.get('title', 'video')
-                # Nettoyage du nom pour éviter les erreurs de caractères spéciaux
-                filename = "".join([c for c in filename if c.isalnum() or c in (' ', '.', '_')]).rstrip()
-                
-                out_path = f"{DOWNLOAD_FOLDER}/{filename}.%(ext)s"
-                
+                # 2. Config technique
                 ydl_opts = {
-                    'outtmpl': out_path,
+                    'outtmpl': f"{DOWNLOAD_FOLDER}/{title}.%(ext)s",
                     'noplaylist': True,
                 }
 
-                if "Audio" in mode:
+                if "Audio" in format_type:
                     ydl_opts.update({
                         'format': 'bestaudio/best',
-                        'postprocessors': [{
-                            'key': 'FFmpegExtractAudio',
-                            'preferredcodec': 'mp3',
-                            'preferredquality': res.replace('kbps', ''),
-                        }],
+                        'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3','preferredquality': '320'}]
                     })
                 else:
-                    quality_map = {"360p": "360", "480p": "480", "720p": "720", "1080p": "1080", "Best": "9999"}
-                    q = quality_map[res]
-                    ydl_opts['format'] = f'bestvideo[height<={q}]+bestaudio/best'
-                    ydl_opts['merge_output_format'] = 'mp4'
+                    q_val = quality.replace('p', '')
+                    ydl_opts['format'] = f'bestvideo[height<={q_val}]+bestaudio/best'
+                    ydl_opts['merge_output_format'] = 'mp4' if "MP4" in format_type else 'mkv'
 
-                # 3. Exécution
-                st.write("Téléchargement des paquets...")
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download([url])
-                
-                status_box.update(label="✅ Fichier prêt !", state="complete", expanded=False)
+                # 3. Download
+                ydl.download([url])
+                status.update(label="✅ Terminé avec succès !", state="complete")
 
-            # 4. Bouton de téléchargement final
-            # On cherche le fichier créé
-            ext = "mp3" if "Audio" in mode else "mp4"
-            final_file = Path(DOWNLOAD_FOLDER) / f"{filename}.{ext}"
+            # --- AFFICHAGE RÉSULTAT ---
+            st.balloons()
+            ext = "mp3" if "Audio" in format_type else ("mp4" if "MP4" in format_type else "mkv")
+            final_file = Path(DOWNLOAD_FOLDER) / f"{title}.{ext}"
+
+            res_col1, res_col2 = st.columns()
+            with res_col1:
+                st.image(info.get('thumbnail'), caption=info.get('title'), use_container_width=True)
             
-            if final_file.exists():
+            with res_col2:
+                st.success(f"Prêt : {title}.{ext}")
                 with open(final_file, "rb") as f:
                     st.download_button(
-                        label=f"📥 TÉLÉCHARGER {ext.upper()}",
+                        f"📥 TÉLÉCHARGER LE FICHIER",
                         data=f,
-                        file_name=f"{filename}.{ext}",
-                        mime=f"video/{ext}" if ext == "mp4" else "audio/mpeg"
+                        file_name=f"{title}.{ext}",
+                        mime="application/octet-stream"
                     )
-                st.session_state.history.append(info.get('title'))
-                if "Audio" in mode:
+                if "Audio" in format_type:
                     st.audio(final_file)
-            else:
-                st.error("Erreur lors de la récupération du fichier final.")
+                
+                st.session_state.history.append(title)
 
         except Exception as e:
-            st.error(f"Détails de l'erreur : {str(e)}")
+            st.error(f"💥 Crash système : {e}")
 
-st.markdown("---")
-st.caption("⚡ Powered by yt-dlp | Design by David Edwin | 2026 Edition")
+st.markdown("<br><br><p style='text-align:center; opacity:0.5;'>Version 2.0-PRO | © 2026 David Edwin</p>", unsafe_allow_html=True)
