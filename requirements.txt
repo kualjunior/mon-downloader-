@@ -1,5 +1,4 @@
 streamlit
 yt-dlp
 streamlit-lottie
-requestsstreamlit
-yt-dlp
+requests
