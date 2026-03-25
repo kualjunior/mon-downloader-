@@ -184,7 +184,14 @@ with tabs:
     # [F10] Générateur de CSV de test
     st.subheader("📁 [F10] Générateur de Data Test")
     if st.button("Générer un fichier Excel/CSV fictif"):
-        df = pd.DataFrame({'ID':, 'Score':})
+       # Correction de la ligne 187
+if st.button("Générer un fichier Excel/CSV fictif"):
+    df = pd.DataFrame({
+        'ID':, 
+        'Score':
+    })
+    st.dataframe(df)
+    st.download_button("Télécharger CSV", df.to_csv(index=False), "data_test.csv")
         st.dataframe(df)
         st.download_button("Télécharger CSV", df.to_csv(), "data_test.csv")
 
