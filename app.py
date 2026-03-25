@@ -3,12 +3,14 @@ import yt_dlp
 import os
 import time
 import qrcode
+import string
+import secrets
 from io import BytesIO
 from pathlib import Path
 from textblob import TextBlob
 
 # =========================
-# CONFIG & ESTHÉTIQUE NEON
+# CONFIG & ESTHÉTIQUE
 # =========================
 st.set_page_config(
     page_title="OmniTools Pro Max 2026",
@@ -19,10 +21,9 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* Fond animé et style moderne */
     .stApp {
         background: radial-gradient(circle at top right, #1a1a2e, #16213e, #0f3460);
-        color: #e94560;
+        color: white;
     }
     .stTabs [data-baseweb="tab-list"] {
         gap: 10px;
@@ -30,35 +31,22 @@ st.markdown("""
         border-radius: 15px;
         padding: 10px;
     }
-    .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        border-radius: 10px;
-        background-color: transparent;
-        color: white;
-        border: 1px solid #4e4e4e;
-    }
     .stTabs [aria-selected="true"] {
         background: linear-gradient(90deg, #e94560, #ff4b2b) !important;
         border: none !important;
     }
-    /* Boutons personnalisés */
     div.stButton > button {
         border-radius: 20px;
         background: linear-gradient(45deg, #0f3460, #e94560);
         color: white;
-        font-weight: bold;
-        transition: 0.3s;
         border: none;
-    }
-    div.stButton > button:hover {
-        box-shadow: 0px 0px 15px #e94560;
-        transform: translateY(-2px);
+        width: 100%;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # =========================
-# INITIALISATION & SÉCURITÉ
+# INITIALISATION
 # =========================
 PASSWORD = "théo123"
 DOWNLOAD_FOLDER = "downloads"
@@ -68,10 +56,10 @@ if "auth" not in st.session_state:
     st.session_state.auth = False
 
 # =========================
-# SYSTÈME DE CONNEXION
+# CONNEXION
 # =========================
 if not st.session_state.auth:
-    col1, col2, col3 = st.columns(3)
+    _, col2, _ = st.columns()
     with col2:
         st.markdown("<h1 style='text-align:center;'>🔐 ACCÈS OMNITOOLS</h1>", unsafe_allow_html=True)
         pwd = st.text_input("Clé d'accès", type="password")
@@ -88,101 +76,106 @@ if not st.session_state.auth:
 # =========================
 st.markdown("<h1 style='text-align:center; color:#e94560;'>🚀 OMNITOOLS PRO MAX</h1>", unsafe_allow_html=True)
 
-# Navigation par Onglets (Le côté Couteau Suisse)
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📥 Media Downloader", 
     "📷 QR Generator", 
     "🧠 Text Intelligence", 
-    "⚖️ Unit Master"
+    "⚖️ Unit Master",
+    "🔐 Password Gen"
 ])
 
 # -------------------------
-# ONGLET 1 : TÉLÉCHARGEMENT MEDIA
+# ONGLET 1 : TÉLÉCHARGEMENT REEL
 # -------------------------
 with tab1:
     st.subheader("Téléchargeur Multi-Plateformes")
     url = st.text_input("Lien (YouTube, TikTok, Instagram...)", placeholder="https://...")
-    
     c1, c2 = st.columns(2)
     with c1:
-        fmt = st.selectbox("Format", ["Vidéo MP4", "Audio MP3"])
+        fmt_choice = st.selectbox("Format", ["Vidéo MP4", "Audio MP3"])
     with c2:
-        qual = st.select_slider("Qualité désirée", options=["Basique", "Standard", "Ultra"])
+        qual = st.select_slider("Qualité", options=["Basse", "Standard", "Haute"])
 
     if st.button("LANCER L'EXTRACTION"):
         if url:
-            with st.spinner("Traitement en cours..."):
-                # Simulation de téléchargement (Récupération de la logique yt_dlp originale)
-                st.info(f"Analyse du flux pour : {url}")
-                st.success("Prêt ! (Note : ffmpeg requis pour MP3 sur serveur)")
+            with st.spinner("Téléchargement et conversion en cours..."):
+                try:
+                    # Configuration yt_dlp
+                    ydl_opts = {
+                        'format': 'bestvideo+bestaudio/best' if fmt_choice == "Vidéo MP4" else 'bestaudio/best',
+                        'outtmpl': f'{DOWNLOAD_FOLDER}/%(title)s.%(ext)s',
+                        'quiet': True,
+                    }
+                    if fmt_choice == "Audio MP3":
+                        ydl_opts['postprocessors'] = [{
+                            'key': 'FFmpegExtractAudio',
+                            'preferredcodec': 'mp3',
+                            'preferredquality': '192',
+                        }]
+
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        info = ydl.extract_info(url, download=True)
+                        temp_file = ydl.prepare_filename(info)
+                        # Ajustement de l'extension pour le MP3
+                        final_file = temp_file.rsplit('.', 1) + ".mp3" if fmt_choice == "Audio MP3" else temp_file
+
+                    with open(final_file, "rb") as f:
+                        st.download_button("💾 Télécharger le fichier final", f, file_name=os.path.basename(final_file))
+                    st.success("Prêt !")
+                except Exception as e:
+                    st.error(f"Erreur : {e}")
         else:
-            st.warning("Veuillez entrer une URL.")
+            st.warning("Entrez une URL.")
 
 # -------------------------
-# ONGLET 2 : GÉNÉRATEUR QR CODE
+# ONGLET 2 : QR CODE
 # -------------------------
 with tab2:
-    st.subheader("Générateur de QR Code Instantané")
-    qr_data = st.text_input("Donnée ou URL à encoder", key="qr_input")
-    qr_color = st.color_picker("Couleur du QR", "#e94560")
-    
+    st.subheader("Générateur de QR Code")
+    qr_data = st.text_input("Donnée à encoder", key="qr_in")
     if qr_data:
-        qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(qr_data)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color=qr_color, back_color="white")
-        
+        qr = qrcode.make(qr_data)
         buf = BytesIO()
-        img.save(buf)
-        st.image(buf.getvalue(), width=250)
-        st.download_button("Télécharger le QR Code", buf.getvalue(), "qrcode.png", "image/png")
+        qr.save(buf, format="PNG")
+        st.image(buf.getvalue(), width=200)
+        st.download_button("Télécharger QR", buf.getvalue(), "code.png")
 
 # -------------------------
-# ONGLET 3 : ANALYSE DE TEXTE (AI LIGHT)
+# ONGLET 3 : TEXTE
 # -------------------------
 with tab3:
-    st.subheader("Analyseur de Sentiment & Stats")
-    user_text = st.text_area("Collez votre texte ici pour l'analyser...")
-    
-    if user_text:
-        blob = TextBlob(user_text)
-        col_a, col_b, col_c = st.columns(3)
-        
-        sentiment = blob.sentiment.polarity
-        mood = "Positif 😊" if sentiment > 0 else "Négatif ☹️" if sentiment < 0 else "Neutre 😐"
-        
-        col_a.metric("Mots", len(user_text.split()))
-        col_b.metric("Caractères", len(user_text))
-        col_c.metric("Ambiance", mood)
-        
-        st.write("**Correction suggérée (Anglais uniquement) :**")
-        st.write(blob.correct())
+    st.subheader("Analyseur de Texte")
+    txt = st.text_area("Texte à analyser")
+    if txt:
+        blob = TextBlob(txt)
+        st.write(f"Mots : {len(txt.split())} | Sentiment : {'😊' if blob.sentiment.polarity > 0 else '😐'}")
 
 # -------------------------
-# ONGLET 4 : CONVERTISSEUR UNIVERSEL
+# ONGLET 4 : UNITÉS
 # -------------------------
 with tab4:
-    st.subheader("Convertisseur d'Unités Pro")
-    cat = st.selectbox("Catégorie", ["Poids (kg ↔ lb)", "Température (°C ↔ °F)"])
-    val = st.number_input("Valeur à convertir", value=1.0)
-    
-    if cat == "Poids (kg ↔ lb)":
-        res = val * 2.20462
-        st.success(f"{val} kg = **{res:.2f} lb**")
-        st.info(f"{val} lb = **{val/2.20462:.2f} kg**")
-    else:
-        res = (val * 9/5) + 32
-        st.success(f"{val} °C = **{res:.2f} °F**")
-        st.info(f"{val} °F = **{(val-32)*5/9:.2f} °C**")
+    st.subheader("Convertisseur")
+    v = st.number_input("Valeur (KG)", value=1.0)
+    st.write(f"{v} KG = {v * 2.20462:.2f} Lbs")
 
-# =========================
-# FOOTER
-# =========================
-st.sidebar.markdown("### 🛠️ Paramètres Système")
+# -------------------------
+# ONGLET 5 : PASSWORD GEN (NOUVEAU)
+# -------------------------
+with tab5:
+    st.subheader("Générateur de Sécurité")
+    length = st.slider("Longueur", 8, 32, 16)
+    if st.button("Générer un mot de passe"):
+        chars = string.ascii_letters + string.digits + string.punctuation
+        pwd_gen = ''.join(secrets.choice(chars) for _ in range(length))
+        st.code(pwd_gen)
+        st.warning("Copiez-le en lieu sûr !")
+
+# -------------------------
+# SIDEBAR
+# -------------------------
+st.sidebar.markdown("### 🛠️ Système")
 if st.sidebar.button("🔴 Déconnexion"):
     st.session_state.auth = False
     st.rerun()
-
 st.sidebar.divider()
 st.sidebar.caption("OmniTools v2.0 - 2026")
-st.sidebar.write("Statut Serveur : 🟢 Optimal")
