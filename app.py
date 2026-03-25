@@ -15,7 +15,6 @@ from textblob import TextBlob
 # ========================================== 
 st.set_page_config(page_title="OMNIS OS v5.0", page_icon="⚡", layout="wide") 
 
-# DESIGN CSS
 st.markdown(""" 
 <style> 
     .stApp { background: #0d1117; color: #e6edf3; } 
@@ -54,18 +53,18 @@ if not st.session_state.auth:
 # ========================================== 
 st.markdown("<h1 style='text-align:center; color:#00d2ff;'>⚡ OMNIS OS v5.0</h1>", unsafe_allow_html=True) 
 
-# On crée les onglets
+# On crée les onglets (C'est une LISTE d'objets)
 tabs = st.tabs(["📥 Media", "🎨 Studio", "🔐 Safe", "🧠 AI", "📊 Data", "🚀 Dev", "🌍 Life", "⚙️ Sys"]) 
 
-# --- FIX: REMPLACEMENT DE "with tabs:" PAR "with tabs[index]:" ---
+# --- CORRECTION CRITIQUE : Utiliser tabs[index] ---
 
-with tabs: 
+with tabs: # Onglet Media
     st.subheader("📥 Media Extraction") 
     url = st.text_input("Lien Vidéo", placeholder="https://...", key="yt_url") 
     if st.button("Lancer l'extraction"): 
         st.info("Recherche du flux... (Simulé)") 
 
-with tabs: 
+with tabs: # Onglet Studio
     st.subheader("🎨 Image Lab") 
     up = st.file_uploader("Charger une image", type=['jpg', 'png']) 
     if up: 
@@ -77,19 +76,19 @@ with tabs:
         with c2: 
             if st.button("Effet Miroir"): st.image(ImageOps.mirror(img)) 
 
-with tabs: 
+with tabs: # Onglet Safe
     st.subheader("🔐 Security Master") 
     if st.button("Générer Passphrase"): st.code(secrets.token_urlsafe(20)) 
     secret_text = st.text_input("Texte à encoder", key="sec_text") 
     if secret_text: st.code(base64.b64encode(secret_text.encode()).decode()) 
 
-with tabs: 
+with tabs: # Onglet AI
     st.subheader("🧠 AI Engine") 
     txt = st.text_area("Analyse de texte", key="ai_area") 
     if txt: 
         st.write(f"Vibe Score: {TextBlob(txt).sentiment.polarity}") 
 
-with tabs: 
+with tabs: # Onglet Data
     st.subheader("📊 Data Visualizer") 
     df = pd.DataFrame({ 
         'ID': ['A1', 'B2', 'C3'], 
@@ -97,7 +96,7 @@ with tabs:
     }) 
     st.dataframe(df, use_container_width=True) 
 
-with tabs: 
+with tabs: # Onglet Dev
     st.subheader("🚀 Syntax Checker") 
     code_snippet = st.text_area("Code Python", "print('Hello')", key="code_area") 
     if st.button("Vérifier"): 
@@ -107,12 +106,12 @@ with tabs:
         except Exception as e: 
             st.error(f"Erreur : {e}") 
 
-with tabs: 
+with tabs: # Onglet Life
     st.subheader("🌍 Life Tools") 
     if st.button("🪙 Pile ou Face"): 
         st.title(secrets.choice(["PILE", "FACE"])) 
 
-with tabs: 
+with tabs: # Onglet Sys
     st.subheader("⚙️ System Status") 
     st.progress(98) 
     if st.button("🔴 DÉCONNEXION"): 
